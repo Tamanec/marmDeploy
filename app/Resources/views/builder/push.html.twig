@@ -1,0 +1,14 @@
+{# app/Resources/views/appConfig/create.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Результаты push</h1>
+
+    <a href="{{ path("image_list") }}">Вернуться к списку образов</a>
+    
+    {% for info in pushInfo %}
+        <p>{{ info.status }}</p>
+    {% endfor %}
+
+{% endblock %}
+

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+##
+# Добавляет группу докера пользователю www-data для доступа к сокету
+##
+
+[ ! -e /var/run/docker.sock ] && echo "Docker socket not found" && exit
+
+echo -e "\nДобавляем пользователю www-data группу docker\n";
+
+DOCKER_GID=$(ls -aln /var/run/docker.sock  | awk '{print $4}')
+addgroup --gid ${DOCKER_GID} docker
+usermod -aG docker www-data
+
+echo -e "\nОстанавливаем контейнер, чтобы процесс php-fpm запустился с новой группой\n"
+echo -e "\ndocker start marm-app-deploy\n\n"
+
+pkill php-fpm

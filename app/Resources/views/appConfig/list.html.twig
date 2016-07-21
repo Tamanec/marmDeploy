@@ -1,0 +1,40 @@
+{# app/Resources/views/appConfig/create.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Создать конфиг</h1>
+
+    <ul>
+        {% for configName in defaultConfigs %}
+            <li><a href="{{ path('config_create', {'name': configName}) }}">
+                {{ configName }}
+            </a></li>
+        {% endfor %}
+    </ul>
+
+    <h1>Список конфигов</h1>
+
+    {% for project, envList in filesTree %}
+        <h2 class="project-title">{{ project }}</h2>
+
+        {% for env, configList in envList %}
+            <h3>{{ env }}</h3>
+
+            <ul>
+                {% for config in configList %}
+                    <li><a href="{{ path('config_edit', {'project': project, 'env': env, 'name': config}) }}">
+                        {{ config }}
+                    </a></li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .project-title {
+            background-color: #ddddff;
+        }
+    </style>
+{% endblock %}

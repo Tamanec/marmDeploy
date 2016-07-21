@@ -1,0 +1,16 @@
+{# app/Resources/views/appConfig/create.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Результаты удаления</h1>
+
+    <p><a href="{{ path("image_list") }}">Вернуться к списку образов</a></p>
+
+    {% if error is empty %}
+        <p>Образ {{ name }} успешно удален</p>
+    {% else %}
+        <p>Ошибка при удалении образа {{ name }}</p>
+        <p>{{ error }}</p>
+    {% endif %}
+{% endblock %}
+

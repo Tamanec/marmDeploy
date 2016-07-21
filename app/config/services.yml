@@ -1,0 +1,35 @@
+# Learn more about services, parameters and containers at
+# http://symfony.com/doc/current/book/service_container.html
+parameters:
+    conf.path: "%kernel.root_dir%/appConfig"
+    repo.path: "%kernel.root_dir%/../var/repo"
+    build.context.path: "%kernel.root_dir%/docker"
+    build.registry.url: "172.29.134.38:5000"
+
+services:
+    app.config.manager:
+        class: AppBundle\Service\AppConfigManager
+        arguments: ["%conf.path%", "@filesystem"]
+
+    docker:
+        class: Docker\Docker
+
+    app.builder:
+        class: AppBundle\Service\BuilderManager
+        arguments:
+            - "@docker"
+            - "@filesystem"
+            - "%repo.path%"
+            - "@app.config.manager"
+            - "%build.context.path%"
+            - "%build.registry.url%"
+
+    form.app.data.image:
+        class: AppBundle\Form\AppDataBuildConfType
+        arguments: ["@app.config.manager"]
+        tags: [ name: form.type ]
+
+    form.log.data.image:
+        class: AppBundle\Form\LogDataBuildConfType
+        arguments: ["@app.config.manager"]
+        tags: [ name: form.type ]

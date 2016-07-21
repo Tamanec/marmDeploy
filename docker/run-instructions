@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+docker network create marm-deploy
+
+# php 7
+
+docker run -d --name marm-app-deploy \
+    --net marm-deploy \
+    --net-alias app \
+    --volume /var/www/marmDeploy:/var/www/html \
+    --volume /var/run/docker.sock:/var/run/docker.sock \
+    --log-driver=json-file --log-opt max-size=100m --log-opt max-file=3 \
+    symfony-php
+
+# nginx
+
+docker run -d --name marm-server-deploy \
+    -p 8081:80 \
+    --net marm-deploy \
+    --net-alias server \
+    --volume /var/www/marmDeploy:/var/www/html \
+    --log-driver=json-file --log-opt max-size=100m --log-opt max-file=3 \
+    symfony-nginx

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+docker build -t symfony-nginx ./docker/nginx
+
+docker build -t symfony-php ./docker/php

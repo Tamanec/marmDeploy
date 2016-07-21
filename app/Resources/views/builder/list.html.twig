@@ -1,0 +1,32 @@
+{# app/Resources/views/appConfig/create.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Список образов</h1>
+
+    <p><a href="{{ path('homepage') }}">Главная</a></p>
+
+    {% for repo in repoList if 'marm' in repo['name'] %}
+        <h2 class="project-title">
+            {{ repo['name'] }}
+        </h2>
+        <ul>
+            {% for tag in repo['tags'] if registryUrl not in tag %}
+                <li>
+                    {{ tag }} 
+                    <a href="{{ path('image_push', {'name': tag}) }}">push</a>
+                    <a href="{{ path('image_delete', {'name': tag}) }}">delete</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .project-title {
+            background-color: #ddddff;
+        }
+    </style>
+{% endblock %}

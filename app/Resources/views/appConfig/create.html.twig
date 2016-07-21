@@ -1,0 +1,16 @@
+{# app/Resources/views/appConfig/create.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Создание конфигурации приложения</h1>
+
+    {{ form_start(form) }}
+    <p>
+        <a href="{{ path('config_list') }}"><input type="button" value="Назад"></a>
+        <input type="submit" value="Создать" name="save">
+    </p>
+    <hr>
+
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+{% endblock %}

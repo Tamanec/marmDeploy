@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>МАРМ deploy tool</h1>
+    <h2>Конфиги</h2>
+    <p>
+        <a href="{{ path('config_list') }}">Список конфигов</a>
+    </p>
+
+    <h2>Билдер</h2>
+    <h3>Data</h3>
+    <ul>
+        <li><a href="{{ path('image_build_app_data', { 'type': 'box' }) }}">box</a></li>
+        <li><a href="{{ path('image_build_app_data', { 'type': 'integrator' }) }}">integrator</a></li>
+        <li><a href="{{ path('image_build_log_data') }}">log</a></li>
+    </ul>
+
+    <h2>Образы</h2>
+    <p>
+        <a href="{{ path('image_list') }}">Список образов</a>
+    </p>
+{% endblock %}
+

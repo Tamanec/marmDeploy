@@ -1,0 +1,7 @@
+StrictHostKeyChecking=no
+PreferredAuthentications publickey,password
+
+Host party.altarix.ru
+    Hostname party.altarix.ru
+    User denis
+    IdentityFile ~/.ssh/free_rsa

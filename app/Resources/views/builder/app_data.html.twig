@@ -1,0 +1,67 @@
+{# app/Resources/views/builder/app_data.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Подготовка сборки data-контейнера для кода приложния</h1>
+
+    {{ form_start(form) }}
+    <p>
+        <a href="{{ path('homepage') }}"><input type="button" value="Назад"></a>
+        <input type="submit" value="Собрать образ">
+    </p>
+    <hr>
+
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        var $project = $('#app_data_image_project');
+
+        $project.change(function() {
+            var $form = $(this).closest('form');
+            var data = {};
+
+            data[$project.attr('name')] = $project.val();
+            $.ajax({
+                url: $form.attr('action'),
+                type: $form.attr('method'),
+                data: data,
+                success: function(html) {
+                    $('#app_data_image_env').replaceWith(
+                        $(html).find('#app_data_image_env')
+                    );
+                    $('#app_data_image_env').trigger('change');
+                }
+            });
+        });
+
+        $('#app_data_image').on(
+            'change',
+            '#app_data_image_env',
+            function() {
+                var $form = $(this).closest('form');
+                var data = {};
+
+                data[$project.attr('name')] = $project.val();
+                data[$(this).attr('name')] = $(this).val();
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: $form.attr('method'),
+                    data: data,
+                    success: function(html) {
+                        $('#app_data_image_mainConfig').replaceWith(
+                            $(html).find('#app_data_image_mainConfig')
+                        );
+                        $('#app_data_image_consoleConfig').replaceWith(
+                            $(html).find('#app_data_image_consoleConfig')
+                        );
+                    }
+                });
+            }
+        );
+
+    </script>
+{% endblock %}

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+php bin/console cache:clear
+chgrp www-data var/cache -R
+chmod g+rwX var/cache -R
