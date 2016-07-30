@@ -3,7 +3,9 @@
 namespace AppBundle\Model;
 
 
-class Config {
+use Symfony\Component\HttpFoundation\File\File;
+
+abstract class Config {
 
     /**
      * @var string Название конфигв
@@ -14,6 +16,11 @@ class Config {
      * @var string Содержимое конфига
      */
     protected $content;
+
+    /**
+     * @var string Путь до папки с конфигами
+     */
+    protected $rootPath;
 
     /**
      * @return string
@@ -33,6 +40,13 @@ class Config {
      * @return string
      */
     public function getContent() {
+        if (empty($this->content)) {
+            $fullName = $this->getPath()
+                . DIRECTORY_SEPARATOR
+                . $this->name;
+            $file = (new File($fullName))->openFile();
+            $this->content = $file->fread($file->getSize());
+        }
         return $this->content;
     }
 

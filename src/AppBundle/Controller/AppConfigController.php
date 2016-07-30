@@ -93,7 +93,7 @@ class AppConfigController extends Controller {
      */
     public function listAction() {
         $confManager = $this->get('app.config.manager');
-        $filesTree = $confManager->findAllConfig();
+        $filesTree = $confManager->getConfigTree();
         $defaultConfigs = $confManager->getDefaultConfigs();
 
         return $this->render(':appConfig:list.html.twig', [

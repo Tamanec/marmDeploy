@@ -3,13 +3,15 @@
 namespace AppBundle\Service;
 
 use AppBundle\Entity\AppConfig;
+use AppBundle\Model\Config;
+use AppBundle\Model\ConfigManager;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\HttpFoundation\File\File;
 
-class AppConfigManager {
+class AppConfigManager extends ConfigManager {
 
     /**
      * @var string
@@ -46,30 +48,9 @@ class AppConfigManager {
     }
 
     /**
-     * @param AppConfig $config
-     */
-    public function saveConfig(AppConfig $config) {
-        $path = $this->getConfigPath(
-            $config->getProject(),
-            $config->getEnv()
-        );
-
-        if (!$this->fs->exists($path)) {
-            $this->fs->mkdir($path);
-            $this->fs->chmod($path, 0775);
-        }
-
-        $fullName = $path
-            . DIRECTORY_SEPARATOR
-            . $config->getName();
-
-        $this->fs->dumpFile($fullName, $config->getContent());
-    }
-
-    /**
      * @return array Дерево файлов - project->env->files
      */
-    public function findAllConfig() {
+    public function getConfigTree() {
         $finder = new Finder();
         $finder->files()->in($this->confPath)->sortByName();
 
@@ -129,17 +110,15 @@ class AppConfigManager {
     }
 
     /**
-     * @param string $project
-     * @param string $env
-     * @param null $name
+     * @param Config $config
      * @return string
      */
-    public function getConfigPath($project, $env = null, $name = null) {
+    public function getConfigPath(Config $config) {
         $dirs = array_filter([
             $this->confPath,
-            $project,
-            $env,
-            $name
+            $config->getProject(),
+            $config->getEnv(),
+            $config->getName()
         ]);
 
         return implode(DIRECTORY_SEPARATOR, $dirs);
