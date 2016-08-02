@@ -3,15 +3,21 @@
 namespace AppBundle\Service;
 
 use AppBundle\Entity\AppConfig;
-use AppBundle\Model\Config;
 use AppBundle\Model\ConfigManager;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Symfony\Component\HttpFoundation\File\File;
 
 class AppConfigManager extends ConfigManager {
+
+    /**
+     * Номера частей при разбиении относительного пути конфига по папкам
+     */
+    const PROJECT = 0;
+    const ENV = 1;
+    const TYPE = 2;
+    const NAME = 3;
 
     /**
      * @var string
@@ -34,20 +40,6 @@ class AppConfigManager extends ConfigManager {
     }
 
     /**
-     * @param $project
-     * @param $env
-     * @param string $name
-     * @return string
-     */
-    public function getConfigContent($project, $env, $name) {
-        $fullName = $this->getConfigPath($project, $env)
-            . DIRECTORY_SEPARATOR
-            . $name;
-        $file = (new File($fullName))->openFile();
-        return $file->fread($file->getSize());
-    }
-
-    /**
      * @return array Дерево файлов - project->env->files
      */
     public function getConfigTree() {
@@ -66,7 +58,8 @@ class AppConfigManager extends ConfigManager {
             );
             $meta = trim($meta, '/');
             $meta = explode('/', $meta);
-            $filesTree[$meta[0]][$meta[1]][] = $meta[2];
+
+            $filesTree[$meta[self::PROJECT]][$meta[self::ENV]][$meta[self::TYPE]][] = $meta[self::NAME];
         }
 
         return $filesTree;
@@ -80,71 +73,38 @@ class AppConfigManager extends ConfigManager {
         return $this->ls($this->confPath . DIRECTORY_SEPARATOR . $project);
     }
 
-    public function findConfigs($project, $env) {
-        return $this->ls(
-            $this->confPath
-            . DIRECTORY_SEPARATOR
-            . $project
-            . DIRECTORY_SEPARATOR
-            . $env
-        );
-    }
-
     /**
      * @return array Список дефолтных конфигов
      */
     public function getDefaultConfigs() {
+        $config = new AppConfig();
+        $config
+            ->setProject('default')
+            ->setEnv('default')
+        ;
+
         $finder = new Finder();
         $finder
             ->files()
-            ->in($this->getConfigPath('default', 'default'))
+            ->in($this->getConfigPath($config))
             ->sortByName()
         ;
 
         $files = [];
         foreach ($finder as $fullFileName) {
-            $files[] = pathinfo($fullFileName, PATHINFO_BASENAME);
+            $type = pathinfo(
+                pathinfo(
+                    $fullFileName,
+                    PATHINFO_DIRNAME
+                ),
+                PATHINFO_BASENAME
+            );
+            $name = pathinfo($fullFileName, PATHINFO_BASENAME);
+
+            $files[$type][] = $name;
         }
 
         return $files;
-    }
-
-    /**
-     * @param Config $config
-     * @return string
-     */
-    public function getConfigPath(Config $config) {
-        $dirs = array_filter([
-            $this->confPath,
-            $config->getProject(),
-            $config->getEnv(),
-            $config->getName()
-        ]);
-
-        return implode(DIRECTORY_SEPARATOR, $dirs);
-    }
-
-    /**
-     * Выполняет поиск файлов и папок заданной директории
-     *
-     * @param string $path Путь до папки
-     * @param array|string $exclude Названия элементов которые должны быть исключены из поиска
-     * @return array Элементы директории
-     */
-    protected function ls($path, $exclude = []) {
-        $finder = new Finder();
-        $finder
-            ->in($path)
-            ->sortByName()
-            ->depth(0)
-            ->exclude($exclude)
-        ;
-
-        $list = array_map(function(SplFileInfo $item) {
-            return basename($item->getRealPath());
-        }, iterator_to_array($finder));
-
-        return array_values($list);
     }
 
 }

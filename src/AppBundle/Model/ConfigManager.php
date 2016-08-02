@@ -2,6 +2,7 @@
 
 namespace AppBundle\Model;
 
+use AppBundle\Entity\AppConfig;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -31,17 +32,11 @@ abstract class ConfigManager {
     }
 
     /**
-     * @param $project
-     * @param $env
-     * @param string $name
+     * @param Config $config
      * @return string
      */
-    public function getConfigContent($project, $env, $name) {
-        $fullName = $this->getConfigPath($project, $env)
-            . DIRECTORY_SEPARATOR
-            . $name
-        ;
-        $file = (new File($fullName))->openFile();
+    public function getConfigContent(Config $config) {
+        $file = (new File($this->getConfigPath($config)))->openFile();
         return $file->fread($file->getSize());
     }
 
@@ -51,24 +46,20 @@ abstract class ConfigManager {
     public function saveConfig(Config $config) {
         $path = $this->getConfigPath($config);
 
-        if (!$this->fs->exists($path)) {
-            $this->fs->mkdir($path);
-            $this->fs->chmod($path, 0775);
+        $dir = dirname($path);
+        if (!$this->fs->exists($dir)) {
+            $this->fs->mkdir($dir);
+            $this->fs->chmod($dir, 0775);
         }
 
-        $fullName = $path
-            . DIRECTORY_SEPARATOR
-            . $config->getName()
-        ;
-
-        $this->fs->dumpFile($fullName, $config->getContent());
+        $this->fs->dumpFile($path, $config->getContent());
     }
 
     /**
      * @param Config $config
      * @return array
      */
-    public function findConfigs(Config $config) {
+    public function findSiblingConfigs(Config $config) {
         return $this->ls($this->getConfigPath($config));
     }
 
@@ -79,9 +70,12 @@ abstract class ConfigManager {
 
     /**
      * @param Config $config
-     * @return string Путь до конфига без имени файла
+     * @return string Путь до конфига
+     * @throws \InvalidArgumentException
      */
-    abstract public function getConfigPath(Config $config);
+    public function getConfigPath(Config $config) {
+        return $this->confPath . $config->getRelativePath();
+    }
 
     /**
      * Выполняет поиск файлов и папок заданной директории
@@ -91,6 +85,10 @@ abstract class ConfigManager {
      * @return array Элементы директории
      */
     protected function ls($path, $exclude = []) {
+        if (!file_exists($path)) {
+            throw new \InvalidArgumentException('Некорретный путь до файла: ' . $path);
+        }
+
         $finder = new Finder();
         $finder
             ->in($path)

@@ -4,6 +4,7 @@ namespace AppBundle\Form;
 
 use AppBundle\Entity\AppConfig;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -17,6 +18,14 @@ class AppConfigType extends AbstractType {
         $builder
             ->add('project', TextType::class)
             ->add('env', TextType::class)
+            ->add('type', ChoiceType::class, [
+                'choices' => [
+                    'box' => 'box',
+                    'integrator' => 'integrator',
+                    'cron' => 'cron',
+                    'logrotate' => 'logrotate',
+                ]
+            ])
             ->add('name', TextType::class)
             ->add('content', TextareaType::class, [
                 'attr' => [
@@ -35,6 +44,7 @@ class AppConfigType extends AbstractType {
                     $form
                         ->add('project', TextType::class, $disabledOptions)
                         ->add('env', TextType::class, $disabledOptions)
+                        ->add('type', TextType::class, $disabledOptions)
                         ->add('name', TextType::class, $disabledOptions)
                     ;
                 }

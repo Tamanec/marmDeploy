@@ -3,6 +3,7 @@
 namespace AppBundle\Form;
 
 
+use AppBundle\Entity\AppConfig;
 use AppBundle\Service\AppConfigManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -10,6 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AppDataBuildConfType extends AbstractType {
@@ -31,14 +33,25 @@ class AppDataBuildConfType extends AbstractType {
         $configManager = $this->configManager;
         $projects = $configManager->findAllProjects();
         $environments = $configManager->findEnvironmentsByProject($projects[0]);
-        $configs = $configManager->findConfigs($projects[0], $environments[0]);
+        $types = [
+            'box',
+            'integrator'
+        ];
+
+        $config = new AppConfig();
+        $config
+            ->setProject($projects[0])
+            ->setEnv($environments[0])
+            ->setType($types[0])
+        ;
+        $configs = $configManager->findSiblingConfigs($config);
 
         $builder
             ->add('type', ChoiceType::class, [
-                'choices' => [
-                    'box' => 'box',
-                    'integrator' => 'integrator'
-                ]
+                'choices' => array_combine(
+                    $types,
+                    $types
+                )
             ])
             ->add('version', TextType::class, [
                 'attr' => [
@@ -82,58 +95,10 @@ class AppDataBuildConfType extends AbstractType {
             ])
         ;
 
-        // Связываем поля env и project
         $builder
-            ->get('project')
             ->addEventListener(
-                FormEvents::POST_SUBMIT,
-                function (FormEvent $event) use ($configManager) {
-                    $form = $event->getForm()->getParent();
-                    $project = $event->getData();
-                    $environments = $configManager->findEnvironmentsByProject($project);
-
-                    $form->add('env', ChoiceType::class, [
-                        'choices' => array_combine(
-                            $environments,
-                            $environments
-                        )
-                    ]);
-                }
-            )
-        ;
-
-        // Связываем поле env с полями mainConfig и consoleConfig
-        $builder
-            ->get('env')
-            ->addEventListener(
-                FormEvents::POST_SUBMIT,
-                function (FormEvent $event) use ($configManager) {
-                    $form = $event->getForm()->getParent();
-                    $project = $form->get('project')->getData();
-                    $env = $event->getData();
-                    $configs = $configManager->findConfigs($project, $env);
-
-                    $form
-                        ->add('mainConfig', ChoiceType::class, [
-                            'choices' => array_combine(
-                                $configs,
-                                $configs
-                            ),
-                            'preferred_choices' => function ($val, $key) {
-                                return stripos($val, 'main') !== false;
-                            }
-                        ])
-                        ->add('consoleConfig', ChoiceType::class, [
-                            'choices' => array_combine(
-                                $configs,
-                                $configs
-                            ),
-                            'preferred_choices' => function ($val, $key) {
-                                return stripos($val, 'console') !== false;
-                            }
-                        ])
-                    ;
-                }
+                FormEvents::PRE_SUBMIT,
+                $this->getPreSubmitListener()
             )
         ;
     }
@@ -142,6 +107,81 @@ class AppDataBuildConfType extends AbstractType {
         $resolver->setDefaults([
             'data_class' => 'AppBundle\Entity\AppDataBuildConf',
         ]);
+    }
+
+    /**
+     * @return \Closure
+     */
+    protected function getPreSubmitListener() {
+        return function (FormEvent $event) {
+            $form = $event->getForm();
+            $data = $event->getData();
+
+            // Обновляем список окружений для проекта
+            if (!isset($data['env']) && !isset($data['type'])) {
+                $this->updateEnv($form, $this->configManager, $data['project']);
+                return;
+            }
+
+            // Обновляем список конфигов по проекту, типу и окружению
+            $config = new AppConfig();
+            $config
+                ->setProject($data['project'])
+                ->setEnv($data['env'])
+                ->setType($data['type'])
+            ;
+
+            $this->updateAppConfigs($form, $this->configManager, $config);
+        };
+    }
+
+    /**
+     * @param FormInterface $form
+     * @param AppConfigManager $configManager
+     * @param string $project
+     */
+    protected function updateEnv(FormInterface $form, AppConfigManager $configManager, $project) {
+        $environments = $configManager->findEnvironmentsByProject($project);
+        $form->add('env', ChoiceType::class, [
+            'choices' => array_combine(
+                $environments,
+                $environments
+            )
+        ]);
+    }
+
+    /**
+     * @param FormInterface $form
+     * @param AppConfigManager $configManager
+     * @param AppConfig $config
+     */
+    protected function updateAppConfigs(FormInterface $form, AppConfigManager $configManager, AppConfig $config) {
+        try {
+            $configs = $configManager->findSiblingConfigs($config);
+        } catch (\InvalidArgumentException $e) {
+            $configs = [];
+        }
+
+        $form
+            ->add('mainConfig', ChoiceType::class, [
+                'choices' => array_combine(
+                    $configs,
+                    $configs
+                ),
+                'preferred_choices' => function ($val, $key) {
+                    return stripos($val, 'main') !== false;
+                }
+            ])
+            ->add('consoleConfig', ChoiceType::class, [
+                'choices' => array_combine(
+                    $configs,
+                    $configs
+                ),
+                'preferred_choices' => function ($val, $key) {
+                    return stripos($val, 'console') !== false;
+                }
+            ])
+        ;
     }
 
 }

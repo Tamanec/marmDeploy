@@ -3,6 +3,7 @@
 namespace AppBundle\Service;
 
 
+use AppBundle\Entity\AppConfig;
 use AppBundle\Entity\AppDataBuildConf;
 
 use AppBundle\Entity\LogDataBuildConf;
@@ -273,16 +274,22 @@ class BuilderManager {
      * @param AppDataBuildConf $imageConf
      */
     protected function copyConfigs(AppDataBuildConf $imageConf) {
-        $mainConfigPath = $this->configManager->getConfigPath(
-            $imageConf->getProject(),
-            $imageConf->getEnv(),
-            $imageConf->getMainConfig()
-        );
-        $consoleConfigPath = $this->configManager->getConfigPath(
-            $imageConf->getProject(),
-            $imageConf->getEnv(),
-            $imageConf->getConsoleConfig()
-        );
+        $mainConfig = new AppConfig();
+        $mainConfig
+            ->setProject($imageConf->getProject())
+            ->setEnv($imageConf->getEnv())
+            ->setName($imageConf->getMainConfig())
+        ;
+        $mainConfigPath = $this->configManager->getConfigPath($mainConfig);
+
+        $consoleConfig = new AppConfig();
+        $consoleConfig
+            ->setProject($imageConf->getProject())
+            ->setEnv($imageConf->getEnv())
+            ->setName($imageConf->getConsoleConfig())
+        ;
+        $consoleConfigPath = $this->configManager->getConfigPath($consoleConfig);
+
         $repoConfigPath = $this->repoPath
             . DIRECTORY_SEPARATOR
             . $imageConf->getType()

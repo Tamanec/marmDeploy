@@ -12,28 +12,40 @@ use Symfony\Component\HttpFoundation\Response;
 class AppConfigController extends Controller {
 
     /**
-     * @Route("/config/create/{name}", name="config_create")
+     * @Route("/config/create/{type}/{name}", name="config_create")
      * @param Request $request
+     * @param $type
      * @param $name
      * @return Response
      */
-    public function createAction(Request $request, $name) {
+    public function createAction(Request $request, $type, $name) {
         $confManager = $this->get('app.config.manager');
 
         // Дефолтные значения
-        $config = new AppConfig();
-        $config->setContent(
-            $confManager->getConfigContent('default', 'default', $name)
-        );
-        $config->setName($name);
+        $defaultConfig = new AppConfig();
+        $defaultConfig
+            ->setProject('default')
+            ->setEnv('default')
+            ->setType($type)
+            ->setName($name)
+        ;
+
+        $newConfig = new AppConfig();
+        $newConfig
+            ->setType($type)
+            ->setName($name)
+            ->setContent(
+                $confManager->getConfigContent($defaultConfig)
+            )
+        ;
 
         // Готовим форму
-        $form = $this->createForm(AppConfigType::class, $config);
+        $form = $this->createForm(AppConfigType::class, $newConfig);
         $form->handleRequest($request);
 
         // Сохранение конфига
         if ($form->isSubmitted() && $form->isValid()) {
-            $confManager->saveConfig($config);
+            $confManager->saveConfig($newConfig);
             return $this->redirectToRoute('config_list');
         }
 
@@ -46,24 +58,28 @@ class AppConfigController extends Controller {
     }
 
     /**
-     * @Route("/config/{project}/{env}/{name}", name="config_edit")
+     * @Route("/config/{project}/{env}/{type}/{name}", name="config_edit")
      * @param Request $request
      * @param $project
      * @param $env
+     * @param $type
      * @param $name
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|Response
      */
-    public function editAction(Request $request, $project, $env, $name) {
+    public function editAction(Request $request, $project, $env, $type, $name) {
         $confManager = $this->get('app.config.manager');
 
         // Дефолтные значения
         $config = new AppConfig();
-        $config->setProject($project);
-        $config->setEnv($env);
-        $config->setContent(
-            $confManager->getConfigContent($project, $env, $name)
-        );
-        $config->setName($name);
+        $config
+            ->setProject($project)
+            ->setEnv($env)
+            ->setType($type)
+            ->setName($name)
+            ->setContent(
+                $confManager->getConfigContent($config)
+            )
+        ;
 
         // Готовим форму
         $form = $this->createForm(AppConfigType::class, $config);
@@ -75,6 +91,7 @@ class AppConfigController extends Controller {
             return $this->redirectToRoute('config_edit', [
                 'project' => $project,
                 'env' => $env,
+                'type' => $type,
                 'name' => $name
             ]);
         }
@@ -100,23 +117,6 @@ class AppConfigController extends Controller {
             'filesTree' => $filesTree,
             'defaultConfigs' => $defaultConfigs
         ]);
-    }
-
-    /**
-     * @Route("/appConfig/success", name="appConfig_success")
-     * @return Response
-     */
-    public function successAction() {
-        return new Response("success!");
-    }
-
-    /**
-     * @Route("/appConfig/test", name="appConfig_test")
-     * @return Response
-     */
-    public function testAction() {
-        $this->get('logger')->addDebug('TEST ACTION');
-        return new Response("zxc");
     }
 
 }

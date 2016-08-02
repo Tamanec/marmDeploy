@@ -5,7 +5,7 @@ namespace AppBundle\Model;
 
 use Symfony\Component\HttpFoundation\File\File;
 
-abstract class Config {
+class Config {
 
     /**
      * @var string Название конфигв
@@ -17,10 +17,13 @@ abstract class Config {
      */
     protected $content;
 
+
     /**
-     * @var string Путь до папки с конфигами
+     * @return string Относительный путь до конфига
      */
-    protected $rootPath;
+    public function getRelativePath() {
+        return DIRECTORY_SEPARATOR . $this->name;
+    }
 
     /**
      * @return string
@@ -31,9 +34,11 @@ abstract class Config {
 
     /**
      * @param string $name
+     * @return $this
      */
     public function setName($name) {
         $this->name = $name;
+        return $this;
     }
 
     /**
@@ -52,9 +57,11 @@ abstract class Config {
 
     /**
      * @param string $content
+     * @return $this
      */
     public function setContent($content) {
         $this->content = $content;
+        return $this;
     }
 
 }

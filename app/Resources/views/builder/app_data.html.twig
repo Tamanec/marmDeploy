@@ -17,51 +17,56 @@
 
 {% block javascripts %}
     <script>
-        var $project = $('#app_data_image_project');
-
-        $project.change(function() {
+        var updateLinkedFields = function() {
             var $form = $(this).closest('form');
+            var $project = $('#app_data_build_conf_project');
+            var $type = $('#app_data_build_conf_type');
+            var $env = $('#app_data_build_conf_env');
             var data = {};
 
             data[$project.attr('name')] = $project.val();
+            data[$env.attr('name')] = $env.val();
+            data[$type.attr('name')] = $type.val();
+
             $.ajax({
                 url: $form.attr('action'),
                 type: $form.attr('method'),
                 data: data,
                 success: function(html) {
-                    $('#app_data_image_env').replaceWith(
-                        $(html).find('#app_data_image_env')
+                    $('#app_data_build_conf_mainConfig').replaceWith(
+                        $(html).find('#app_data_build_conf_mainConfig')
                     );
-                    $('#app_data_image_env').trigger('change');
+                    $('#app_data_build_conf_consoleConfig').replaceWith(
+                        $(html).find('#app_data_build_conf_consoleConfig')
+                    );
+                }
+            });
+        };
+
+        $('#app_data_build_conf_type').change(updateLinkedFields);
+
+        $('#app_data_build_conf_project').change(function() {
+            var $form = $(this).closest('form');
+            var data = {};
+
+            data[$(this).attr('name')] = $(this).val();
+            $.ajax({
+                url: $form.attr('action'),
+                type: $form.attr('method'),
+                data: data,
+                success: function(html) {
+                    $('#app_data_build_conf_env').replaceWith(
+                        $(html).find('#app_data_build_conf_env')
+                    );
+                    $('#app_data_build_conf_env').trigger('change');
                 }
             });
         });
 
-        $('#app_data_image').on(
+        $('#app_data_build_conf').on(
             'change',
-            '#app_data_image_env',
-            function() {
-                var $form = $(this).closest('form');
-                var data = {};
-
-                data[$project.attr('name')] = $project.val();
-                data[$(this).attr('name')] = $(this).val();
-
-                $.ajax({
-                    url: $form.attr('action'),
-                    type: $form.attr('method'),
-                    data: data,
-                    success: function(html) {
-                        $('#app_data_image_mainConfig').replaceWith(
-                            $(html).find('#app_data_image_mainConfig')
-                        );
-                        $('#app_data_image_consoleConfig').replaceWith(
-                            $(html).find('#app_data_image_consoleConfig')
-                        );
-                    }
-                });
-            }
+            '#app_data_build_conf_env',
+            updateLinkedFields
         );
-
     </script>
 {% endblock %}

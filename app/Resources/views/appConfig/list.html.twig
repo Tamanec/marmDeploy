@@ -2,31 +2,42 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+    <p><a href="{{ path('homepage') }}">Главная</a></p>
+
     <h1>Создать конфиг</h1>
 
-    <ul>
-        {% for configName in defaultConfigs %}
-            <li><a href="{{ path('config_create', {'name': configName}) }}">
-                {{ configName }}
-            </a></li>
-        {% endfor %}
-    </ul>
+    {% for type, configList in defaultConfigs %}
+        <h3 class="type-title">{{ type }}</h3>
+
+        <ul>
+            {% for configName in configList  %}
+                <li><a href="{{ path('config_create', {'type': type, 'name': configName}) }}">
+                    {{ configName }}
+                </a></li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+
 
     <h1>Список конфигов</h1>
 
     {% for project, envList in filesTree %}
         <h2 class="project-title">{{ project }}</h2>
 
-        {% for env, configList in envList %}
+        {% for env, typeList in envList %}
             <h3>{{ env }}</h3>
 
-            <ul>
-                {% for config in configList %}
-                    <li><a href="{{ path('config_edit', {'project': project, 'env': env, 'name': config}) }}">
-                        {{ config }}
-                    </a></li>
-                {% endfor %}
-            </ul>
+            {% for type, configList in typeList %}
+                <h3 class="type-title">{{ type }}</h3>
+
+                <ul>
+                    {% for config in configList %}
+                        <li><a href="{{ path('config_edit', {'project': project, 'env': env, 'type': type, 'name': config}) }}">
+                            {{ config }}
+                        </a></li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
         {% endfor %}
     {% endfor %}
 {% endblock %}
@@ -35,6 +46,10 @@
     <style>
         .project-title {
             background-color: #ddddff;
+        }
+
+        .type-title {
+            font-size: small;
         }
     </style>
 {% endblock %}
