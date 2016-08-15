@@ -2,16 +2,17 @@
 
 namespace AppBundle\Entity;
 
+
 use AppBundle\Model\ProjectRelatedBuildConf;
 
-class LogDataBuildConf extends ProjectRelatedBuildConf {
+class CronBuildConf extends ProjectRelatedBuildConf {
 
     public function getRelativeBuildContextPath() {
-        return '/data/log';
+        return '/cron';
     }
 
     protected function getImagePrefix() {
-        return 'marm-data-log-';
+        return 'marm-cron-';
     }
 
 }

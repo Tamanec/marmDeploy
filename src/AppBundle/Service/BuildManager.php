@@ -5,19 +5,20 @@ namespace AppBundle\Service;
 
 use AppBundle\Entity\AppConfig;
 use AppBundle\Entity\AppDataBuildConf;
-
-use AppBundle\Entity\LogDataBuildConf;
+use AppBundle\Model\ProjectRelatedBuildConf;
 use Docker\API\Model\BuildInfo;
 use Docker\Context\Context;
 use Docker\Docker;
 use Docker\Stream\BuildStream;
 use GitElephant\Repository;
+use Http\Client\Plugin\Exception\ClientErrorException;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
-class BuilderManager {
+class BuildManager {
 
     const REPO_BOX = 'ssh://git@party.altarix.ru:2222/box.git';
     const REPO_INTEGRATOR = 'ssh://git@party.altarix.ru:2222/integrator.git';
@@ -68,7 +69,7 @@ class BuilderManager {
     protected $registryUrl;
 
     /**
-     * BuilderManager constructor.
+     * BuildManager constructor.
      * @param Docker $docker
      * @param Filesystem $fs
      * @param string $repoPath
@@ -93,24 +94,21 @@ class BuilderManager {
     }
 
     /**
+     * Собирает образы данных для box и integrator
+     *
      * @param AppDataBuildConf $buildConf Параметры сборки
      * @return BuildInfo[]|BuildStream|ResponseInterface
      */
-    public function buildAppData(AppDataBuildConf $buildConf) {
+    public function buildAppDataImage(AppDataBuildConf $buildConf) {
         // Git - клонируем реп (если нужно), переключаемся на указанную ветку
         $projectPath = $this->prepareRepo($buildConf);
 
         // Копируем конфиги
         $this->copyConfigs($buildConf);
 
-        // Копируем код в контекст Dockerfile
-        $appBuildContextPath = $this->buildContextPath
-            . self::BUILD_CONTEXT_PATH_DATA_APP
-        ;
-        $appSource = $appBuildContextPath
-            . '/source/'
-            . $buildConf->getType()
-        ;
+        // Копируем код в контекст сборки
+        $appBuildContextPath = $this->buildContextPath . $buildConf->getRelativeBuildContextPath();
+        $appSource = $appBuildContextPath . '/source';
         $this->prepareBuildContext($projectPath, $appSource);
 
         // Запускаем build
@@ -127,13 +125,18 @@ class BuilderManager {
     }
 
     /**
-     * @param LogDataBuildConf $buildConf
+     * Собирает дополнительные образы связанные привязанные к проекту:
+     *      log (data-контейнер),
+     *      cron,
+     *      logrotate
+     *
+     * @param ProjectRelatedBuildConf $buildConf
      * @return \Docker\API\Model\BuildInfo[]|BuildStream|ResponseInterface
      */
-    public function buildLogData(LogDataBuildConf $buildConf) {
-        $appBuildContextPath = $this->buildContextPath
-            . self::BUILD_CONTEXT_PATH_DATA_APP
-        ;
+    public function buildProjectRelatedImage(ProjectRelatedBuildConf $buildConf) {
+        // подложить конфиг
+
+        $appBuildContextPath = $this->buildContextPath . $buildConf->getRelativeBuildContextPath();
         $context = new Context($appBuildContextPath);
         $buildInfo = $this->docker->getImageManager()->build(
             $context->toStream(),
@@ -198,15 +201,27 @@ class BuilderManager {
     }
 
     /**
-     * Удаляет образ и тэг на приватный репозиторий
+     * Проверяет существует ли образ
+     *
+     * @param string $name Имя образа
+     * @return bool
+     */
+    public function isExists($name) {
+        try {
+            $this->docker->getImageManager()->find($name);
+            return true;
+        } catch (ClientErrorException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Удаляет образ
      *
      * @param $name Название образа
      */
     public function deleteImage($name) {
         $this->docker->getImageManager()->remove($name);
-        $this->docker->getImageManager()->remove(
-            $this->registryUrl . '/' . $name
-        );
     }
 
     /**
@@ -256,8 +271,8 @@ class BuilderManager {
         if (!$this->fs->exists($projectPath)) {
             $git = new Repository($this->repoPath);
             $repoUrl = $imageConf->getType() === 'integrator'
-                ? BuilderManager::REPO_INTEGRATOR
-                : BuilderManager::REPO_BOX
+                ? BuildManager::REPO_INTEGRATOR
+                : BuildManager::REPO_BOX
             ;
             $git->cloneFrom($repoUrl);
             $this->fs->chmod($this->repoPath, 0775, 0, true);
@@ -266,6 +281,15 @@ class BuilderManager {
         $git = new Repository($projectPath);
         $git->fetch();
         $git->checkout($imageConf->getBranch());
+
+        $process = new Process('composer install');
+        $process->setWorkingDirectory($projectPath . '/protected');
+        $process->setTimeout(600);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
 
         return $projectPath;
     }
@@ -278,6 +302,7 @@ class BuilderManager {
         $mainConfig
             ->setProject($imageConf->getProject())
             ->setEnv($imageConf->getEnv())
+            ->setType($imageConf->getType())
             ->setName($imageConf->getMainConfig())
         ;
         $mainConfigPath = $this->configManager->getConfigPath($mainConfig);
@@ -286,6 +311,7 @@ class BuilderManager {
         $consoleConfig
             ->setProject($imageConf->getProject())
             ->setEnv($imageConf->getEnv())
+            ->setType($imageConf->getType())
             ->setName($imageConf->getConsoleConfig())
         ;
         $consoleConfigPath = $this->configManager->getConfigPath($consoleConfig);
@@ -300,13 +326,15 @@ class BuilderManager {
     }
 
     /**
-     * @param $projectPath
-     * @param $appSource
+     * Копирует код проекта в контекст сборки докера
+     * Перед копированием очищает папку контекста
+     *
+     * @param string $projectPath Путь до кода проекта
+     * @param string $appSource Путь до папки содержащей код в контексте сборки
      */
     protected function prepareBuildContext($projectPath, $appSource) {
-        if ($this->fs->exists($appSource)) {
-            $this->fs->chmod($appSource, 0775, 0, true);
-        }
+        $dirContent = (new Finder())->in($appSource);
+        $this->fs->remove($dirContent);
 
         $process = new Process("cp -r {$projectPath} {$appSource}");
         $process->run();

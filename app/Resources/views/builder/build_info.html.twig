@@ -1,0 +1,14 @@
+{# app/Resources/views/appConfig/create.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Результаты сборки</h1>
+
+    <p><a href="{{ path("homepage") }}">Главная</a></p>
+    
+    {% for info in buildInfo %}
+        <p>{{ info.stream }}</p>
+    {% endfor %}
+
+{% endblock %}
+

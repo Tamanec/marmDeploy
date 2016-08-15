@@ -11,11 +11,15 @@
             {{ repo['name'] }}
         </h2>
         <ul>
-            {% for tag in repo['tags'] if registryUrl not in tag %}
+            {# for tag in repo['tags'] if registryUrl not in tag #}
+            {% for tag in repo['tags'] %}
                 <li>
-                    {{ tag }} 
-                    <a href="{{ path('image_push', {'name': tag}) }}">push</a>
-                    <a href="{{ path('image_delete', {'name': tag}) }}">delete</a>
+                    {{ tag }}
+                    {% if registryUrl not in tag %}
+                        <a href="{{ path('image_push', {'name': tag}) }}">push</a>
+                        <a href="{{ path('image_delete', {'name': tag}) }}">delete</a>
+                    {% endif %}
+
                 </li>
             {% endfor %}
         </ul>

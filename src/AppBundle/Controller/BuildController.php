@@ -4,10 +4,12 @@ namespace AppBundle\Controller;
 
 
 use AppBundle\Entity\AppDataBuildConf;
+use AppBundle\Entity\CronBuildConf;
 use AppBundle\Entity\LogDataBuildConf;
+use AppBundle\Entity\LogrotateBuildConf;
 use AppBundle\Form\AppDataBuildConfType;
-use AppBundle\Form\LogDataBuildConfType;
-use AppBundle\Service\BuilderManager;
+use AppBundle\Form\ProjectRelatedBuildConfType;
+use AppBundle\Service\BuildManager;
 use Docker\Docker;
 use GitElephant\GitBinary;
 use GitElephant\Repository;
@@ -19,7 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Process\Process;
 
-class BuilderController extends Controller {
+class BuildController extends Controller {
 
     /**
      * @Route(
@@ -42,9 +44,9 @@ class BuilderController extends Controller {
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $buildInfo = $this->get('app.builder')->buildAppData($buildConf);
+            $buildInfo = $this->get('app.builder')->buildAppDataImage($buildConf);
 
-            return $this->render(':builder:build.html.twig', [
+            return $this->render(':builder:build_info.html.twig', [
                 'buildInfo' => $buildInfo
             ]);
         }
@@ -58,27 +60,49 @@ class BuilderController extends Controller {
     }
 
     /**
-     * @Route("/image/build/log", name="image_build_log_data")
+     * @Route(
+     *     "/image/build/{type}",
+     *     name="image_build_log_data",
+     *     requirements={"type"="log|cron|logrotate"}
+     * )
      * @param Request $request
+     * @param $type
      * @return Response
      */
-    public function buildLogDataImageAction(Request $request) {
-        $buildConf = new LogDataBuildConf();
+    public function buildProjectRelatedImageAction(Request $request, $type) {
+        switch ($type) {
+            case 'log':
+                $buildConf = new LogDataBuildConf();
+                break;
+
+            case 'cron':
+                $buildConf = new CronBuildConf();
+                break;
+
+            case 'logrotate':
+                $buildConf = new LogrotateBuildConf();
+                break;
+
+
+            default:
+                throw new \InvalidArgumentException('Некорректный тип билда: ' . $type);
+        }
+
         $form = $this->createForm(
-            LogDataBuildConfType::class,
+            ProjectRelatedBuildConfType::class,
             $buildConf
         );
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $buildInfo = $this->get('app.builder')->buildLogData($buildConf);
+            $buildInfo = $this->get('app.builder')->buildProjectRelatedImage($buildConf);
 
-            return $this->render(':builder:build.html.twig', [
+            return $this->render(':builder:build_info.html.twig', [
                 'buildInfo' => $buildInfo
             ]);
         }
 
-        return $this->render(':builder:log_data.html.twig', [
+        return $this->render(':builder:build.html.twig', [
             'form' => $form->createView()
         ]);
     }
@@ -109,13 +133,19 @@ class BuilderController extends Controller {
 
     /**
      * @Route("/image/delete/{name}", name="image_delete")
-     * @param $name
+     * @param string $name
      * @return Response
      */
     public function deleteImageAction($name) {
         $error = null;
         try {
-            $this->get('app.builder')->deleteImage($name);
+            $builder = $this->get('app.builder');
+            $builder->deleteImage($name);
+
+            $pushedImage = $builder->getRegistryUrl() . '/' . $name;
+            if ($builder->isExists($pushedImage)) {
+                $builder->deleteImage($pushedImage);
+            }
         } catch (ClientErrorException $e) {
             $error = $e->getMessage();
         }
@@ -138,7 +168,7 @@ class BuilderController extends Controller {
         $fs = new Filesystem();
         if (!$fs->exists($integrator)) {
             $git = new Repository(realpath($repoPath), new GitBinary('/usr/bin/git'));
-            $git->cloneFrom(BuilderManager::REPO_INTEGRATOR);
+            $git->cloneFrom(BuildManager::REPO_INTEGRATOR);
             $fs->chmod($integrator, 0775, 0, true);
 
             $output = $git->getCaller()->getOutput();
@@ -186,6 +216,7 @@ class BuilderController extends Controller {
             $res = $docker->getImageManager()->find($name);
             dump($res);
         } catch (ClientErrorException $e) {
+            dump($e);
             return new Response($e->getMessage() . ' // ' . $e->getCode() . ' // ' . $e->getResponse()->getBody());
         }
 

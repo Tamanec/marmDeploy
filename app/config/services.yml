@@ -15,7 +15,7 @@ services:
         class: Docker\Docker
 
     app.builder:
-        class: AppBundle\Service\BuilderManager
+        class: AppBundle\Service\BuildManager
         arguments:
             - "@docker"
             - "@filesystem"
@@ -29,7 +29,7 @@ services:
         arguments: ["@app.config.manager"]
         tags: [ name: form.type ]
 
-    form.log.data.image:
-        class: AppBundle\Form\LogDataBuildConfType
+    form.project.related.image:
+        class: AppBundle\Form\ProjectRelatedBuildConfType
         arguments: ["@app.config.manager"]
         tags: [ name: form.type ]

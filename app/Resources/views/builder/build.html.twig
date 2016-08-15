@@ -1,14 +1,16 @@
-{# app/Resources/views/appConfig/create.html.twig #}
+{# app/Resources/views/builder/log_data.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <h1>Результаты сборки</h1>
+    <h1>Подготовка сборки data-контейнера для логов</h1>
 
-    <p><a href="{{ path("homepage") }}">Главная</a></p>
-    
-    {% for info in buildInfo %}
-        <p>{{ info.stream }}</p>
-    {% endfor %}
+    {{ form_start(form) }}
+    <p>
+        <a href="{{ path('homepage') }}"><input type="button" value="Назад"></a>
+        <input type="submit" value="Собрать образ">
+    </p>
+    <hr>
 
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
 {% endblock %}
-

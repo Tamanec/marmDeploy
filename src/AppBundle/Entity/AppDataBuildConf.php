@@ -2,8 +2,9 @@
 
 namespace AppBundle\Entity;
 
+use AppBundle\Model\ProjectRelatedBuildConf;
 
-class AppDataBuildConf {
+class AppDataBuildConf extends ProjectRelatedBuildConf {
 
     /**
      * @var string Тип образа (box, integrator)
@@ -11,19 +12,9 @@ class AppDataBuildConf {
     protected $type;
 
     /**
-     * @var string
-     */
-    protected $version;
-
-    /**
      * @var string Название ветки гита содержащую нужную версию кода
      */
     protected $branch;
-
-    /**
-     * @var string Название проекта
-     */
-    protected $project;
 
     /**
      * @var string Название окружения
@@ -40,18 +31,29 @@ class AppDataBuildConf {
      */
     protected $consoleConfig;
 
+    protected function getImagePrefix() {
+        return 'marm-data-';
+    }
+
+    public function getRelativeBuildContextPath() {
+        return '/data/www';
+    }
+
     /**
      * @return string Название образа включая тэг
      */
     public function getFullName() {
-        return 'marm-data-' . $this->getType() . ':' . $this->getVersion();
+        return $this->getImagePrefix()
+        . $this->getType()
+        . '-' . $this->getProject()
+        . ':' . $this->getVersion();
     }
 
     /**
      * @return string Название образа без тэга
      */
     public function getName() {
-        return 'marm-data-' . $this->getType();
+        return $this->getImagePrefix() . $this->getType() . '-' . $this->getProject();
     }
 
     /**
@@ -71,20 +73,6 @@ class AppDataBuildConf {
     /**
      * @return string
      */
-    public function getVersion() {
-        return $this->version;
-    }
-
-    /**
-     * @param string $version
-     */
-    public function setVersion($version) {
-        $this->version = $version;
-    }
-
-    /**
-     * @return string
-     */
     public function getBranch() {
         return $this->branch;
     }
@@ -94,20 +82,6 @@ class AppDataBuildConf {
      */
     public function setBranch($branch) {
         $this->branch = $branch;
-    }
-
-    /**
-     * @return string
-     */
-    public function getProject() {
-        return $this->project;
-    }
-
-    /**
-     * @param string $project
-     */
-    public function setProject($project) {
-        $this->project = $project;
     }
 
     /**

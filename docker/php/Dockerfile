@@ -9,7 +9,8 @@ RUN apt-get install -y libpq-dev && docker-php-ext-install -j$(nproc) pdo pdo_pg
 
 RUN docker-php-ext-install -j$(nproc) \
     bcmath \
-    exif
+    exif \
+    pcntl
 
 RUN docker-php-ext-enable opcache
 
@@ -29,3 +30,6 @@ ADD ssh /var/www/.ssh
 RUN chown www-data:www-data -R /var/www/.ssh && \
     chmod 700 /var/www/.ssh && \
     chmod 600 /var/www/.ssh/*
+
+RUN chgrp www-data /var/www && \
+    chmod g+rwX /var/www
