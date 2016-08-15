@@ -1,0 +1,43 @@
+/var/log/marm/nadzor/*.log {
+    daily
+    rotate 14
+    olddir /var/log/marm/nadzor/archive
+    dateext
+    compress
+    notifempty
+    missingok
+    copytruncate
+}
+
+/var/log/marm/nadzor/cron/*.log {
+    daily
+    rotate 14
+    olddir /var/log/marm/nadzor/cron/archive
+    dateext
+    compress
+    notifempty
+    missingok
+    copytruncate
+}
+
+/var/log/marm/nadzor/service/*.log {
+    daily
+    rotate 14
+    olddir /var/log/marm/nadzor/service/archive
+    dateext
+    compress
+    notifempty
+    missingok
+    copytruncate
+}
+
+/var/log/marm/integrator/box-requests/nadzor/*.log {
+    daily
+    rotate 14
+    olddir /var/log/marm/integrator/box-requests/nadzor/archive
+    dateext
+    compress
+    notifempty
+    missingok
+    copytruncate
+}

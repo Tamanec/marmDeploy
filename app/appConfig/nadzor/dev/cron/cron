@@ -1,0 +1,63 @@
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=marm2-dev@altarix.ru
+
+INTEGRATOR=/var/www/integrator
+BOX=/var/www/box
+LOGS_PATH=/var/log/marm/project/cron
+
+#--- НАДЗОР ---#
+# x-marm-version: 2.4.12
+# x-marm-token: nadzor
+# x-project-version: v1d8
+
+# fix for wsdl
+0 8-20 * * * root curl http://77.247.243.35:1024/nadzor_service/NadzorService.asmx?WSDL -o ${INTEGRATOR}/protected/runtime/nadzor.wsdl &> ${LOGS_PATH}/cron/wsdl.log && cp ${INTEGRATOR}/protected/runtime/nadzor.wsdl ${BOX}/protected/runtime/nadzor.wsdl
+
+# Справочники
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=okrug >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=districts >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=odh >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=type_crossroad >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=phase >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=crosswalk_characteristic >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=inspection_type >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=railcross_category >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=railcross_usetype >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=rail_track_dept >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=railcross_duty >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=railcross_type >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=barrier_state >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=railcross_signal >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=highway_category >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=railcross_location >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=rail_repair >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=organizations >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=normative_act >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=warrants >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=order_status >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=order_type >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=object_type >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=organization_status >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=road_type >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=organization_law_type >> ${LOGS_PATH}/cron/nadzor_cron.log
+
+
+# Зависимые справочники
+0 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=inspection_object_type >> ${LOGS_PATH}/cron/nadzor_cron.log
+5 15 * * * root ${BOX}/protected/yiic nadzor importReference --tableName=odh_violation_type >> ${LOGS_PATH}/cron/nadzor_cron.log
+
+# Комплексные справочники
+#0 15 * * * root ${BOX}/protected/yiic nadzor importDivisionsWithNsi >> ${LOGS_PATH}/cron/nadzor_cron.log
+#0 15 * * * root ${BOX}/protected/yiic nadzor importNsiUsersInfo >> ${LOGS_PATH}/cron/nadzor_cron.log
+0 15 * * * root ${BOX}/protected/yiic nadzor importFullOdh >> ${LOGS_PATH}/cron/nadzor_cron.log
+
+# Документы
+15 8-20/1 * * * root ${BOX}/protected/yiic nadzor importDocuments --template=crosswalk >> ${LOGS_PATH}/cron/nadzor_cron.log
+15 8-20/1 * * * root ${BOX}/protected/yiic nadzor importDocuments --template=railcross >> ${LOGS_PATH}/cron/nadzor_cron.log
+15 8-20/1 * * * root /usr/bin/flock -xn /tmp/inspectionActImport.lock -c '${BOX}/protected/yiic nadzor importDocuments --template=inspectionAct >> ${LOGS_PATH}/cron/nadzor_cron.log'
+45 8-20/1 * * * root ${BOX}/protected/yiic nadzor importDocuments --template=prescription >> ${LOGS_PATH}/cron/nadzor_cron.log
+15 8-20/1 * * * root ${BOX}/protected/yiic nadzor ImportDocuments --template=winterRoadReport >> ${LOGS_PATH}/cron/nadzor_cron.log
+
+#export docs
+*/10 * * * * root php ${INTEGRATOR}/run.php nadzor export &>> ${LOGS_PATH}/cron/nadzor-export.log
