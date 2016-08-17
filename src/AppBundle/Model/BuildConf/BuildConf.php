@@ -1,7 +1,7 @@
 <?php
 
 
-namespace AppBundle\Model;
+namespace AppBundle\Model\BuildConf;
 
 abstract class BuildConf {
 

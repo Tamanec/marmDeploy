@@ -7,6 +7,7 @@ use AppBundle\Model\AppConf\AppConfig;
 use AppBundle\Service\AppConfigManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -14,55 +15,28 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class AppDataBuildConfType extends AbstractType {
-
-    /**
-     * @var AppConfigManager
-     */
-    protected $configManager;
-
-    /**
-     * AppDataBuildConfType constructor.
-     * @param AppConfigManager $configManager
-     */
-    public function __construct(AppConfigManager $configManager) {
-        $this->configManager = $configManager;
-    }
+/**
+ * Форма для получения данных сборки образов cron и logrotate
+ *
+ * @package AppBundle\Form
+ */
+class PRWithConfigBuildConfType extends ProjectRelatedBuildConfType {
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $configManager = $this->configManager;
         $projects = $configManager->findAllProjects();
         $environments = $configManager->findEnvironmentsByProject($projects[0]);
-        $types = [
-            'box',
-            'integrator'
-        ];
+        $type = $options['type'];
 
         $config = new AppConfig();
         $config
             ->setProject($projects[0])
             ->setEnv($environments[0])
-            ->setType($types[0])
+            ->setType($type)
         ;
         $configs = $configManager->findSiblingConfigs($config);
 
         $builder
-            ->add('type', ChoiceType::class, [
-                'choices' => array_combine(
-                    $types,
-                    $types
-                )
-            ])
-            ->add('version', TextType::class, [
-                'attr' => [
-                    'placeholder' => 'Тэг к докер-образу'
-                ]
-            ])
-            ->add('branch', TextType::class, [
-                'attr' => [
-                    'placeholder' => 'Гит-ветка проекта'
-                ]
-            ])
             ->add('project', ChoiceType::class, [
                 'choices' => array_combine(
                     $projects,
@@ -75,23 +49,24 @@ class AppDataBuildConfType extends AbstractType {
                     $environments
                 )
             ])
-            ->add('mainConfig', ChoiceType::class, [
+            ->add('config', ChoiceType::class, [
                 'choices' => array_combine(
                     $configs,
                     $configs
                 ),
-                'preferred_choices' => function ($val, $key) {
-                    return stripos($val, 'main') !== false;
+                'preferred_choices' => function ($val, $key) use ($projects) {
+                    return stripos($val, $projects[0]) !== false;
                 }
             ])
-            ->add('consoleConfig', ChoiceType::class, [
-                'choices' => array_combine(
-                    $configs,
-                    $configs
-                ),
-                'preferred_choices' => function ($val, $key) {
-                    return stripos($val, 'console') !== false;
-                }
+            ->add('version', TextType::class, [
+                'data' => 'latest',
+                'attr' => [
+                    'placeholder' => 'Тэг к докер-образу'
+                ]
+            ])
+            ->add('type', HiddenType::class, [
+                'data' => $type,
+                'mapped' => false
             ])
         ;
 
@@ -104,9 +79,8 @@ class AppDataBuildConfType extends AbstractType {
     }
 
     public function configureOptions(OptionsResolver $resolver) {
-        $resolver->setDefaults([
-            'data_class' => 'AppBundle\Model\BuildConf\AppDataBuildConf',
-        ]);
+        $resolver->setDefined('type');
+        $resolver->setAllowedValues('type', ['cron', 'logrotate']);
     }
 
     /**
@@ -163,22 +137,13 @@ class AppDataBuildConfType extends AbstractType {
         }
 
         $form
-            ->add('mainConfig', ChoiceType::class, [
+            ->add('config', ChoiceType::class, [
                 'choices' => array_combine(
                     $configs,
                     $configs
                 ),
-                'preferred_choices' => function ($val, $key) {
-                    return stripos($val, 'main') !== false;
-                }
-            ])
-            ->add('consoleConfig', ChoiceType::class, [
-                'choices' => array_combine(
-                    $configs,
-                    $configs
-                ),
-                'preferred_choices' => function ($val, $key) {
-                    return stripos($val, 'console') !== false;
+                'preferred_choices' => function ($val, $key) use ($config) {
+                    return stripos($val, $config->getProject()) !== false;
                 }
             ])
         ;

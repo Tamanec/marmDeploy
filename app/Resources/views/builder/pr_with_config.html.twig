@@ -1,0 +1,67 @@
+{# app/Resources/views/builder/app_data.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Подготовка сборки</h1>
+
+    {{ form_start(form) }}
+    <p>
+        <a href="{{ path('homepage') }}"><input type="button" value="Назад"></a>
+        <input type="submit" value="Собрать образ">
+    </p>
+    <hr>
+
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        var updateLinkedFields = function() {
+            var $form = $(this).closest('form');
+            var $project = $('#pr_with_config_build_conf_project');
+            var $type = $('#pr_with_config_build_conf_type');
+            var $env = $('#pr_with_config_build_conf_env');
+            var data = {};
+
+            data[$project.attr('name')] = $project.val();
+            data[$env.attr('name')] = $env.val();
+            data[$type.attr('name')] = $type.val();
+
+            $.ajax({
+                url: $form.attr('action'),
+                type: $form.attr('method'),
+                data: data,
+                success: function(html) {
+                    $('#pr_with_config_build_conf_config').replaceWith(
+                        $(html).find('#pr_with_config_build_conf_config')
+                    );
+                }
+            });
+        };
+
+        $('#pr_with_config_build_conf_project').change(function() {
+            var $form = $(this).closest('form');
+            var data = {};
+
+            data[$(this).attr('name')] = $(this).val();
+            $.ajax({
+                url: $form.attr('action'),
+                type: $form.attr('method'),
+                data: data,
+                success: function(html) {
+                    $('#pr_with_config_build_conf_env').replaceWith(
+                        $(html).find('#pr_with_config_build_conf_env')
+                    );
+                    $('#pr_with_config_build_conf_env').trigger('change');
+                }
+            });
+        });
+
+        $('#pr_with_config_build_conf').on(
+            'change',
+            '#pr_with_config_build_conf_env',
+            updateLinkedFields
+        );
+    </script>
+{% endblock %}

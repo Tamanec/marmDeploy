@@ -3,10 +3,11 @@
 namespace AppBundle\Controller;
 
 
-use AppBundle\Entity\AppDataBuildConf;
-use AppBundle\Entity\CronBuildConf;
-use AppBundle\Entity\LogDataBuildConf;
-use AppBundle\Entity\LogrotateBuildConf;
+use AppBundle\Form\PRWithConfigBuildConfType;
+use AppBundle\Model\BuildConf\AppDataBuildConf;
+use AppBundle\Model\BuildConf\CronBuildConf;
+use AppBundle\Model\BuildConf\LogDataBuildConf;
+use AppBundle\Model\BuildConf\LogrotateBuildConf;
 use AppBundle\Form\AppDataBuildConfType;
 use AppBundle\Form\ProjectRelatedBuildConfType;
 use AppBundle\Service\BuildManager;
@@ -26,44 +27,8 @@ class BuildController extends Controller {
     /**
      * @Route(
      *     "/image/build/{type}",
-     *     name="image_build_app_data",
-     *     requirements={"type"="box|integrator"}
-     * )
-     * @param Request $request
-     * @param $type
-     * @return Response
-     */
-    public function buildAppDataImageAction(Request $request, $type) {
-        $buildConf = new AppDataBuildConf();
-        $buildConf->setType($type);
-
-        $form = $this->createForm(
-            AppDataBuildConfType::class,
-            $buildConf
-        );
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $buildInfo = $this->get('app.builder')->buildAppDataImage($buildConf);
-
-            return $this->render(':builder:build_info.html.twig', [
-                'buildInfo' => $buildInfo
-            ]);
-        }
-
-        return $this->render(
-            'builder/app_data.html.twig',
-            [
-                'form' => $form->createView()
-            ]
-        );
-    }
-
-    /**
-     * @Route(
-     *     "/image/build/{type}",
-     *     name="image_build_log_data",
-     *     requirements={"type"="log|cron|logrotate"}
+     *     name="image_build_project_related",
+     *     requirements={"type"="box|integrator|log|cron|logrotate"}
      * )
      * @param Request $request
      * @param $type
@@ -71,27 +36,55 @@ class BuildController extends Controller {
      */
     public function buildProjectRelatedImageAction(Request $request, $type) {
         switch ($type) {
+            case 'box':
+            case 'integrator':
+                $buildConf = new AppDataBuildConf();
+                $buildConf->setType($type);
+
+                $form = $this->createForm(
+                    AppDataBuildConfType::class,
+                    $buildConf
+                );
+                $view = ':builder:app_data.html.twig';
+                break;
+
             case 'log':
                 $buildConf = new LogDataBuildConf();
+                $form = $this->createForm(
+                    ProjectRelatedBuildConfType::class,
+                    $buildConf
+                );
+                $view = ':builder:build.html.twig';
                 break;
 
             case 'cron':
                 $buildConf = new CronBuildConf();
+                $form = $this->createForm(
+                    PRWithConfigBuildConfType::class,
+                    $buildConf,
+                    [
+                        'type' => 'cron'
+                    ]
+                );
+                $view = ':builder:pr_with_config.html.twig';
                 break;
 
             case 'logrotate':
                 $buildConf = new LogrotateBuildConf();
+                $form = $this->createForm(
+                    PRWithConfigBuildConfType::class,
+                    $buildConf,
+                    [
+                        'type' => 'logrotate'
+                    ]
+                );
+                $view = ':builder:pr_with_config.html.twig';
                 break;
 
 
             default:
                 throw new \InvalidArgumentException('Некорректный тип билда: ' . $type);
         }
-
-        $form = $this->createForm(
-            ProjectRelatedBuildConfType::class,
-            $buildConf
-        );
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -102,7 +95,7 @@ class BuildController extends Controller {
             ]);
         }
 
-        return $this->render(':builder:build.html.twig', [
+        return $this->render($view, [
             'form' => $form->createView()
         ]);
     }

@@ -1,8 +1,6 @@
 <?php
 
-namespace AppBundle\Entity;
-
-use AppBundle\Model\Config;
+namespace AppBundle\Model\AppConf;
 
 class AppConfig extends Config {
 

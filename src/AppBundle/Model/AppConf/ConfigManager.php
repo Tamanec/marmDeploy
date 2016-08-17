@@ -1,8 +1,9 @@
 <?php
 
-namespace AppBundle\Model;
+namespace AppBundle\Model\AppConf;
 
-use AppBundle\Entity\AppConfig;
+use AppBundle\Model\AppConf\AppConfig;
+use AppBundle\Model\AppConf\Config;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;

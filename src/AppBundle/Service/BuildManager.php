@@ -3,9 +3,9 @@
 namespace AppBundle\Service;
 
 
-use AppBundle\Entity\AppConfig;
-use AppBundle\Entity\AppDataBuildConf;
-use AppBundle\Model\ProjectRelatedBuildConf;
+use AppBundle\Model\AppConf\AppConfig;
+use AppBundle\Model\BuildConf\AppDataBuildConf;
+use AppBundle\Model\BuildConf\ProjectRelatedBuildConf;
 use Docker\API\Model\BuildInfo;
 use Docker\Context\Context;
 use Docker\Docker;
@@ -22,21 +22,6 @@ class BuildManager {
 
     const REPO_BOX = 'ssh://git@party.altarix.ru:2222/box.git';
     const REPO_INTEGRATOR = 'ssh://git@party.altarix.ru:2222/integrator.git';
-
-    /**
-     * Путь до папки контекста сборок
-     * относительно папки содержащей контексты
-     */
-
-    /**
-     * data-контейнера приложения (box|integrator)
-     */
-    const BUILD_CONTEXT_PATH_DATA_APP = '/data/www';
-
-    /**
-     * data-контейнер логов
-     */
-    const BUILD_CONTEXT_PATH_DATA_LOG = '/data/log';
 
     /**
      * @var Docker
@@ -96,7 +81,7 @@ class BuildManager {
     /**
      * Собирает образы данных для box и integrator
      *
-     * @param AppDataBuildConf $buildConf Параметры сборки
+     * @param \AppBundle\Model\BuildConf\AppDataBuildConf $buildConf Параметры сборки
      * @return BuildInfo[]|BuildStream|ResponseInterface
      */
     public function buildAppDataImage(AppDataBuildConf $buildConf) {
@@ -130,7 +115,7 @@ class BuildManager {
      *      cron,
      *      logrotate
      *
-     * @param ProjectRelatedBuildConf $buildConf
+     * @param \AppBundle\Model\BuildConf\ProjectRelatedBuildConf $buildConf
      * @return \Docker\API\Model\BuildInfo[]|BuildStream|ResponseInterface
      */
     public function buildProjectRelatedImage(ProjectRelatedBuildConf $buildConf) {
@@ -262,7 +247,7 @@ class BuildManager {
     }
 
     /**
-     * @param AppDataBuildConf $imageConf
+     * @param \AppBundle\Model\BuildConf\AppDataBuildConf $imageConf
      * @return string Путь до папки с кодом проекта
      */
     protected function prepareRepo(AppDataBuildConf $imageConf) {
@@ -295,7 +280,7 @@ class BuildManager {
     }
 
     /**
-     * @param AppDataBuildConf $imageConf
+     * @param \AppBundle\Model\BuildConf\AppDataBuildConf $imageConf
      */
     protected function copyConfigs(AppDataBuildConf $imageConf) {
         $mainConfig = new AppConfig();

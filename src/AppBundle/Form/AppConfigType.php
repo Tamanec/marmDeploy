@@ -2,7 +2,7 @@
 
 namespace AppBundle\Form;
 
-use AppBundle\Entity\AppConfig;
+use AppBundle\Model\AppConf\AppConfig;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -54,7 +54,7 @@ class AppConfigType extends AbstractType {
 
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
-            'data_class' => 'AppBundle\Entity\AppConfig'
+            'data_class' => 'AppBundle\Model\AppConf\AppConfig'
         ]);
     }
 

@@ -1,8 +1,6 @@
 <?php
 
-namespace AppBundle\Entity;
-
-use AppBundle\Model\ProjectRelatedBuildConf;
+namespace AppBundle\Model\BuildConf;
 
 class LogDataBuildConf extends ProjectRelatedBuildConf {
 

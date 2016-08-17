@@ -33,3 +33,8 @@ services:
         class: AppBundle\Form\ProjectRelatedBuildConfType
         arguments: ["@app.config.manager"]
         tags: [ name: form.type ]
+
+    form.pr.with.conf.image:
+        class: AppBundle\Form\PRWithConfigBuildConfType
+        arguments: ["@app.config.manager"]
+        tags: [ name: form.type ]

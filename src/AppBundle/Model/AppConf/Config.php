@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Model;
+namespace AppBundle\Model\AppConf;
 
 
 use Symfony\Component\HttpFoundation\File\File;

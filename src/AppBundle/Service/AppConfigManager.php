@@ -2,8 +2,8 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\AppConfig;
-use AppBundle\Model\ConfigManager;
+use AppBundle\Model\AppConf\AppConfig;
+use AppBundle\Model\AppConf\ConfigManager;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
