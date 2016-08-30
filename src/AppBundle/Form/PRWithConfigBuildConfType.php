@@ -20,7 +20,20 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  *
  * @package AppBundle\Form
  */
-class PRWithConfigBuildConfType extends ProjectRelatedBuildConfType {
+class PRWithConfigBuildConfType extends AbstractType {
+
+    /**
+     * @var AppConfigManager
+     */
+    protected $configManager;
+
+    /**
+     * AppDataBuildConfType constructor.
+     * @param AppConfigManager $configManager
+     */
+    public function __construct(AppConfigManager $configManager) {
+        $this->configManager = $configManager;
+    }
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $configManager = $this->configManager;

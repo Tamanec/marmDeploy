@@ -2,101 +2,163 @@
 
 namespace AppBundle\Controller;
 
-
-use AppBundle\Form\PRWithConfigBuildConfType;
+use AppBundle\Form\AppDataBuildConfType;
+use AppBundle\Form\CronBuildConfType;
+use AppBundle\Form\LogDataBuildConfType;
+use AppBundle\Form\LogrotateBuildConfType;
 use AppBundle\Model\BuildConf\AppDataBuildConf;
 use AppBundle\Model\BuildConf\CronBuildConf;
 use AppBundle\Model\BuildConf\LogDataBuildConf;
 use AppBundle\Model\BuildConf\LogrotateBuildConf;
-use AppBundle\Form\AppDataBuildConfType;
-use AppBundle\Form\ProjectRelatedBuildConfType;
-use AppBundle\Service\BuildManager;
-use Docker\Docker;
-use GitElephant\GitBinary;
-use GitElephant\Repository;
-use Http\Client\Plugin\Exception\ClientErrorException;
+use AppBundle\Model\BuildContext\AppDataBuildContext;
+use AppBundle\Model\BuildContext\CronBuildContext;
+use AppBundle\Model\BuildContext\LogDataBuildContext;
+use AppBundle\Model\BuildContext\LogrotateBuildContext;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Process\Process;
 
 class BuildController extends Controller {
 
     /**
      * @Route(
      *     "/image/build/{type}",
-     *     name="image_build_project_related",
-     *     requirements={"type"="box|integrator|log|cron|logrotate"}
+     *     name="image_build_app_data",
+     *     requirements={"type"="box|integrator"}
      * )
      * @param Request $request
      * @param $type
      * @return Response
      */
-    public function buildProjectRelatedImageAction(Request $request, $type) {
-        switch ($type) {
-            case 'box':
-            case 'integrator':
-                $buildConf = new AppDataBuildConf();
-                $buildConf->setType($type);
+    public function buildAppDataAction(Request $request, $type) {
+        $buildConf = new AppDataBuildConf();
+        $buildConf->setType($type);
 
-                $form = $this->createForm(
-                    AppDataBuildConfType::class,
-                    $buildConf
-                );
-                $view = ':builder:app_data.html.twig';
-                break;
-
-            case 'log':
-                $buildConf = new LogDataBuildConf();
-                $form = $this->createForm(
-                    ProjectRelatedBuildConfType::class,
-                    $buildConf
-                );
-                $view = ':builder:build.html.twig';
-                break;
-
-            case 'cron':
-                $buildConf = new CronBuildConf();
-                $form = $this->createForm(
-                    PRWithConfigBuildConfType::class,
-                    $buildConf,
-                    [
-                        'type' => 'cron'
-                    ]
-                );
-                $view = ':builder:pr_with_config.html.twig';
-                break;
-
-            case 'logrotate':
-                $buildConf = new LogrotateBuildConf();
-                $form = $this->createForm(
-                    PRWithConfigBuildConfType::class,
-                    $buildConf,
-                    [
-                        'type' => 'logrotate'
-                    ]
-                );
-                $view = ':builder:pr_with_config.html.twig';
-                break;
-
-
-            default:
-                throw new \InvalidArgumentException('Некорректный тип билда: ' . $type);
-        }
+        $form = $this->createForm(
+            AppDataBuildConfType::class,
+            $buildConf
+        );
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $buildInfo = $this->get('app.builder')->buildProjectRelatedImage($buildConf);
+            $buildContext = new AppDataBuildContext(
+                $this->container->getParameter('build.context.path'),
+                $buildConf,
+                $this->get('app.project.repository'),
+                $this->get('filesystem'),
+                $this->get('app.config.manager')
+            );
+            $buildInfo = $this->get('app.builder')->buildImage($buildConf, $buildContext);
 
             return $this->render(':builder:build_info.html.twig', [
                 'buildInfo' => $buildInfo
             ]);
         }
 
-        return $this->render($view, [
+        return $this->render(':builder:app_data.html.twig', [
             'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/image/build/log", name="image_build_log_data")
+     * @param Request $request
+     * @return Response
+     */
+    public function buildLogDataAction(Request $request) {
+        $buildConf = new LogDataBuildConf();
+
+        $form = $this->createForm(
+            LogDataBuildConfType::class,
+            $buildConf
+        );
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $buildContext = new LogDataBuildContext(
+                $this->container->getParameter('build.context.path'),
+                $buildConf
+            );
+            $buildInfo = $this->get('app.builder')->buildImage($buildConf, $buildContext);
+
+            return $this->render(':builder:build_info.html.twig', [
+                'buildInfo' => $buildInfo
+            ]);
+        }
+
+        return $this->render(':builder:log_data.html.twig', [
+            'form' => $form->createView(),
+            'title' => 'Подготовка сборки data-контейнера для логов приложения'
+        ]);
+    }
+
+    /**
+     * @Route("/image/build/cron", name="image_build_cron")
+     * @param Request $request
+     * @return Response
+     */
+    public function buildCronAction(Request $request) {
+        $buildConf = new CronBuildConf();
+
+        $form = $this->createForm(
+            CronBuildConfType::class,
+            $buildConf
+        );
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $buildContext = new CronBuildContext(
+                $this->container->getParameter('build.context.path'),
+                $buildConf,
+                $this->get('filesystem'),
+                $this->get('app.config.manager')
+            );
+            $buildInfo = $this->get('app.builder')->buildImage($buildConf, $buildContext);
+
+            return $this->render(':builder:build_info.html.twig', [
+                'buildInfo' => $buildInfo
+            ]);
+        }
+
+        return $this->render(':builder:cron.html.twig', [
+            'form' => $form->createView(),
+            'title' => 'Подготовка сборки cron-контейнера'
+        ]);
+    }
+
+    /**
+     * @Route("/image/build/logrotate", name="image_build_logrotate")
+     * @param Request $request
+     * @return Response
+     */
+    public function buildLogrotateAction(Request $request) {
+        $buildConf = new LogrotateBuildConf();
+
+        $form = $this->createForm(
+            LogrotateBuildConfType::class,
+            $buildConf
+        );
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $buildContext = new LogrotateBuildContext(
+                $this->container->getParameter('build.context.path'),
+                $buildConf,
+                $this->get('filesystem'),
+                $this->get('app.config.manager')
+            );
+            $buildInfo = $this->get('app.builder')->buildImage($buildConf, $buildContext);
+
+            return $this->render(':builder:build_info.html.twig', [
+                'buildInfo' => $buildInfo
+            ]);
+        }
+
+        return $this->render(':builder:logrotate.html.twig', [
+            'form' => $form->createView(),
+            'title' => 'Подготовка сборки logrotate-контейнера'
         ]);
     }
 
@@ -139,7 +201,7 @@ class BuildController extends Controller {
             if ($builder->isExists($pushedImage)) {
                 $builder->deleteImage($pushedImage);
             }
-        } catch (ClientErrorException $e) {
+        } catch (\Exception $e) {
             $error = $e->getMessage();
         }
 
@@ -147,110 +209,6 @@ class BuildController extends Controller {
             'name' => $name,
             'error' => $error
         ]);
-    }
-
-    /**
-     * @Route("/git/checkout/{branch}", name="builder_git", defaults={"branch" = "master"})
-     * @param $branch
-     * @return Response
-     */
-    public function gitAction($branch) {
-        $repoPath = $this->getParameter('kernel.root_dir') . '/../var/repo';
-        $integrator = $repoPath . '/integrator';
-
-        $fs = new Filesystem();
-        if (!$fs->exists($integrator)) {
-            $git = new Repository(realpath($repoPath), new GitBinary('/usr/bin/git'));
-            $git->cloneFrom(BuildManager::REPO_INTEGRATOR);
-            $fs->chmod($integrator, 0775, 0, true);
-
-            $output = $git->getCaller()->getOutput();
-            dump($output);
-        }
-
-        $git = new Repository(realpath($integrator), new GitBinary('/usr/bin/git'));
-        $git->checkout($branch);
-
-
-        //$this->get('cypress_git_elephant.repository_collection')
-
-        //$branches = $box->getBranches(true, true);
-        //dump($branches);
-
-        // Получаем нужный код
-        //$box->checkout($branch);
-
-        // Подставляем конфиги
-
-        // Запускаем сборку докер-образа
-
-        // Пушим в репозиторий
-
-        //$status = $box->getStatus();
-        //$rawStatus = $box->getStatusOutput();
-        //dump($rawStatus);
-        //dump($status->all());
-
-        return new Response('hi');
-    }
-
-    /**
-     * @Route("/docker/image/find/{name}", name="builder_docker")
-     * @param $name
-     * @return Response
-     */
-    public function dockerAction($name) {
-        $docker = new Docker();
-
-        /*$containers = $docker->getContainerManager()->findAll();
-        dump($containers);*/
-
-        try {
-            $res = $docker->getImageManager()->find($name);
-            dump($res);
-        } catch (ClientErrorException $e) {
-            dump($e);
-            return new Response($e->getMessage() . ' // ' . $e->getCode() . ' // ' . $e->getResponse()->getBody());
-        }
-
-
-        $images = $docker->getImageManager()->findAll([
-            'filter' => $name
-        ]);
-        if (empty($images)) {
-            return new Response(sprintf('Image %s not found', $name), Response::HTTP_NOT_FOUND);
-        }
-        dump($images);
-
-        return new Response("hi");
-    }
-
-    /**
-     * @Route(
-     *     "/docker/tag/{name}/{image}/{repo}",
-     *     name="builder_docker_tag",
-     *     defaults={
-     *          "name"="latest",
-     *          "image"="marm-server-box",
-     *          "repo"="172.29.134.38:5000/marm-server-box-test"
-     *     },
-     *     requirements={"repo"=".+"}
-     * )
-     * @param $image
-     * @param $repo
-     * @param $name
-     * @return Response
-     */
-    public function dockerTagAction($image, $repo, $name) {
-        $docker = new Docker();
-        $res = $docker->getImageManager()->tag($image, [
-            'repo' => $repo,
-            'force' => false,
-            'tag' => $name,
-        ]);
-        dump($res);
-
-        return new Response("hi");
     }
 
 }

@@ -8,7 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 
-class ProjectRelatedBuildConfType extends AbstractType {
+class LogDataBuildConfType extends AbstractType {
 
     /**
      * @var AppConfigManager

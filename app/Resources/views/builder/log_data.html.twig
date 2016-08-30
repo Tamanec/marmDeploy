@@ -1,8 +1,8 @@
-{# app/Resources/views/builder/app_data.html.twig #}
+{# app/Resources/views/builder/log_data.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <h1>Подготовка сборки</h1>
+    <h1>{{ title }}</h1>
 
     {{ form_start(form) }}
     <p>
@@ -34,7 +34,7 @@
                 data: data,
                 success: function(html) {
                     $('#pr_with_config_build_conf_config').replaceWith(
-                        $(html).find('#pr_with_config_build_conf_config')
+                            $(html).find('#pr_with_config_build_conf_config')
                     );
                 }
             });
@@ -51,7 +51,7 @@
                 data: data,
                 success: function(html) {
                     $('#pr_with_config_build_conf_env').replaceWith(
-                        $(html).find('#pr_with_config_build_conf_env')
+                            $(html).find('#pr_with_config_build_conf_env')
                     );
                     $('#pr_with_config_build_conf_env').trigger('change');
                 }
@@ -59,9 +59,9 @@
         });
 
         $('#pr_with_config_build_conf').on(
-            'change',
-            '#pr_with_config_build_conf_env',
-            updateLinkedFields
+                'change',
+                '#pr_with_config_build_conf_env',
+                updateLinkedFields
         );
     </script>
 {% endblock %}

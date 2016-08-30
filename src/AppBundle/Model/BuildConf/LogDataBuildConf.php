@@ -12,4 +12,8 @@ class LogDataBuildConf extends ProjectRelatedBuildConf {
         return 'marm-data-log-';
     }
 
+    public function getBuildArgs() {
+        return json_encode(['PROJECT_NAME' => $this->getProject()]);
+    }
+
 }

@@ -5,13 +5,12 @@ namespace AppBundle\Service;
 
 use AppBundle\Model\AppConf\AppConfig;
 use AppBundle\Model\BuildConf\AppDataBuildConf;
-use AppBundle\Model\BuildConf\ProjectRelatedBuildConf;
-use Docker\API\Model\BuildInfo;
+use AppBundle\Model\BuildConf\BuildConf;
+use AppBundle\Model\BuildContext\BuildContext;
 use Docker\Context\Context;
 use Docker\Docker;
 use Docker\Stream\BuildStream;
 use GitElephant\Repository;
-use Http\Client\Plugin\Exception\ClientErrorException;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -19,9 +18,6 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 class BuildManager {
-
-    const REPO_BOX = 'ssh://git@party.altarix.ru:2222/box.git';
-    const REPO_INTEGRATOR = 'ssh://git@party.altarix.ru:2222/integrator.git';
 
     /**
      * @var Docker
@@ -46,11 +42,6 @@ class BuildManager {
     /**
      * @var string
      */
-    protected $buildContextPath;
-
-    /**
-     * @var string
-     */
     protected $registryUrl;
 
     /**
@@ -59,7 +50,6 @@ class BuildManager {
      * @param Filesystem $fs
      * @param string $repoPath
      * @param AppConfigManager $configManager
-     * @param $buildContextPath
      * @param $registryUrl
      */
     public function __construct(
@@ -67,67 +57,31 @@ class BuildManager {
         Filesystem $fs,
         $repoPath,
         AppConfigManager $configManager,
-        $buildContextPath,
         $registryUrl
     ) {
         $this->docker = $docker;
         $this->fs = $fs;
         $this->repoPath = realpath($repoPath);
         $this->configManager = $configManager;
-        $this->buildContextPath = $buildContextPath;
         $this->registryUrl = $registryUrl;
     }
 
     /**
-     * Собирает образы данных для box и integrator
+     * Запускает сборку образа
      *
-     * @param \AppBundle\Model\BuildConf\AppDataBuildConf $buildConf Параметры сборки
-     * @return BuildInfo[]|BuildStream|ResponseInterface
-     */
-    public function buildAppDataImage(AppDataBuildConf $buildConf) {
-        // Git - клонируем реп (если нужно), переключаемся на указанную ветку
-        $projectPath = $this->prepareRepo($buildConf);
-
-        // Копируем конфиги
-        $this->copyConfigs($buildConf);
-
-        // Копируем код в контекст сборки
-        $appBuildContextPath = $this->buildContextPath . $buildConf->getRelativeBuildContextPath();
-        $appSource = $appBuildContextPath . '/source';
-        $this->prepareBuildContext($projectPath, $appSource);
-
-        // Запускаем build
-        $context = new Context($appBuildContextPath);
-        $buildInfo = $this->docker->getImageManager()->build(
-            $context->toStream(),
-            [
-                't' => $buildConf->getFullName(),
-                'buildargs' => ['SOURCE_NAME' => $buildConf->getType()]
-            ]
-        );
-
-        return $buildInfo;
-    }
-
-    /**
-     * Собирает дополнительные образы связанные привязанные к проекту:
-     *      log (data-контейнер),
-     *      cron,
-     *      logrotate
-     *
-     * @param \AppBundle\Model\BuildConf\ProjectRelatedBuildConf $buildConf
+     * @param BuildConf $buildConf Настройки сборки
+     * @param BuildContext $buildContext Контекст сборки
      * @return \Docker\API\Model\BuildInfo[]|BuildStream|ResponseInterface
      */
-    public function buildProjectRelatedImage(ProjectRelatedBuildConf $buildConf) {
-        // подложить конфиг
+    public function buildImage(BuildConf $buildConf, BuildContext $buildContext) {
+        $buildContext->prepare();
 
-        $appBuildContextPath = $this->buildContextPath . $buildConf->getRelativeBuildContextPath();
-        $context = new Context($appBuildContextPath);
+        $context = new Context($buildContext->getPath());
         $buildInfo = $this->docker->getImageManager()->build(
             $context->toStream(),
             [
                 't' => $buildConf->getFullName(),
-                'buildargs' => ['PROJECT_NAME' => $buildConf->getProject()]
+                'buildargs' => $buildConf->getBuildArgs()
             ]
         );
 
@@ -168,7 +122,6 @@ class BuildManager {
             $name,
             [
                 'repo' => $this->registryUrl . '/' . $this->getShortImageName($name),
-                'force' => true,
                 'tag' => $this->getImageTag($name)
             ]
         );
@@ -195,7 +148,7 @@ class BuildManager {
         try {
             $this->docker->getImageManager()->find($name);
             return true;
-        } catch (ClientErrorException $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -203,7 +156,7 @@ class BuildManager {
     /**
      * Удаляет образ
      *
-     * @param $name Название образа
+     * @param string $name Название образа
      */
     public function deleteImage($name) {
         $this->docker->getImageManager()->remove($name);

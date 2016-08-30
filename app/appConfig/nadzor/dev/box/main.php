@@ -45,12 +45,6 @@ return array(
 			),
 		),
 
-		'db' => array(
-			'class' => 'CDbConnection',
-			'connectionString' => 'pgsql:dbname=box',
-			'username' => 'pguser',
-			'password' => 'jA2QWe21F4',
-		),
 		'db_collective' => array(
 			'class' => 'CDbConnection',
 			'connectionString' => 'pgsql:dbname=collective',
@@ -117,7 +111,7 @@ return array(
 		),
 
 		'printLink' => 'http://dev.print.marm2.altarix.org/', // deprecated
-		'integratorLink' => 'http://integrator.local/',
+		'integratorLink' => 'http://marm-server-integrator/',
 		'printFormLink' => 'http://printForm.local/',
 		'boxExternalLink' => 'http://dev.box.marm2.altarix.org/',
 		'userfilesPath' => '/var/www/userfiles/',

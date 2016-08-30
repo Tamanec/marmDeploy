@@ -23,6 +23,10 @@ class CronBuildConf extends ProjectRelatedBuildConf {
         return 'marm-cron-';
     }
 
+    public function getBuildArgs() {
+        return json_encode(['PROJECT_NAME' => $this->getProject()]);
+    }
+
     /**
      * @return string
      */

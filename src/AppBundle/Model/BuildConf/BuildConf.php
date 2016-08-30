@@ -25,4 +25,11 @@ abstract class BuildConf {
      */
     abstract protected function getImagePrefix();
 
+    /**
+     * @return string Параметры сборки (buildargs) в формате json
+     */
+    public function getBuildArgs() {
+        return [];
+    }
+
 }

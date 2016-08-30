@@ -23,6 +23,10 @@ class LogrotateBuildConf extends ProjectRelatedBuildConf {
         return 'marm-logrotate-';
     }
 
+    public function getBuildArgs() {
+        return json_encode(['PROJECT_NAME' => $this->getProject()]);
+    }
+
     /**
      * @return string
      */

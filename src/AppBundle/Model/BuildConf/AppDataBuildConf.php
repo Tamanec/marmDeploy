@@ -37,6 +37,10 @@ class AppDataBuildConf extends ProjectRelatedBuildConf {
         return '/data/www';
     }
 
+    public function getBuildArgs() {
+        return json_encode(['SOURCE_NAME' => $this->getType()]);
+    }
+
     /**
      * @return string Название образа включая тэг
      */

@@ -58,7 +58,7 @@ return array(
 			'username' => 'mongouser',
 			'password' => 'jA2QWe21F4',
 		),
-		'marmBoxLink' => 'http://box.local/',
+		'marmBoxLink' => 'http://marm-server-box/',
 		'marmBoxUser' => array(
 			'login' => 'integrator',
 			'password' => 'iknowyouwantmetoauthorize'

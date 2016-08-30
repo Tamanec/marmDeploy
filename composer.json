@@ -23,7 +23,7 @@
         "sensio/framework-extra-bundle": "^3.0.2",
         "incenteev/composer-parameter-handler": "^2.0",
         "cypresslab/gitelephant": "1.1.0",
-        "docker-php/docker-php": "1.23.1"
+        "docker-php/docker-php": "1.24.0"
     },
     "require-dev": {
         "sensio/generator-bundle": "^3.0",

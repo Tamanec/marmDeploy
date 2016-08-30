@@ -1,0 +1,65 @@
+{# app/Resources/views/builder/app_data.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>{{ title }}</h1>
+
+    {{ form_start(form) }}
+    <p>
+        <a href="{{ path('homepage') }}"><input type="button" value="Назад"></a>
+        <input type="submit" value="Собрать образ">
+    </p>
+    <hr>
+
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        var updateLinkedFields = function() {
+            var $form = $(this).closest('form');
+            var $project = $('#cron_build_conf_projectEnv_project');
+            var $env = $('#cron_build_conf_projectEnv_env');
+            var data = {};
+
+            data[$project.attr('name')] = $project.val();
+            data[$env.attr('name')] = $env.val();
+
+            $.ajax({
+                url: $form.attr('action'),
+                type: $form.attr('method'),
+                data: data,
+                success: function(html) {
+                    $('#cron_build_conf_conf_config').replaceWith(
+                        $(html).find('#cron_build_conf_conf_config')
+                    );
+                }
+            });
+        };
+
+        $('#cron_build_conf_projectEnv_project').change(function() {
+            var $form = $(this).closest('form');
+            var data = {};
+
+            data[$(this).attr('name')] = $(this).val();
+            $.ajax({
+                url: $form.attr('action'),
+                type: $form.attr('method'),
+                data: data,
+                success: function(html) {
+                    $('#cron_build_conf_projectEnv_env').replaceWith(
+                        $(html).find('#cron_build_conf_projectEnv_env')
+                    );
+                    $('#cron_build_conf_projectEnv_env').trigger('change');
+                }
+            });
+        });
+
+        $('#cron_build_conf').on(
+            'change',
+            '#cron_build_conf_projectEnv_env',
+            updateLinkedFields
+        );
+    </script>
+{% endblock %}

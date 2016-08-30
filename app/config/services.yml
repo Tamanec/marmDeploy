@@ -21,20 +21,44 @@ services:
             - "@filesystem"
             - "%repo.path%"
             - "@app.config.manager"
-            - "%build.context.path%"
             - "%build.registry.url%"
+            #- "%build.context.path%"
+
+    app.project.repository:
+        class: AppBundle\Service\ProjectRepository
+        arguments: ["%repo.path%", "@filesystem"]
 
     form.app.data.image:
         class: AppBundle\Form\AppDataBuildConfType
         arguments: ["@app.config.manager"]
         tags: [ name: form.type ]
 
+    form.cron.image:
+        class: AppBundle\Form\CronBuildConfType
+        arguments: ["@app.config.manager"]
+        tags: [ name: form.type ]
+
+    form.logrotate.image:
+        class: AppBundle\Form\LogrotateBuildConfType
+        arguments: ["@app.config.manager"]
+        tags: [ name: form.type ]
+
     form.project.related.image:
-        class: AppBundle\Form\ProjectRelatedBuildConfType
+        class: AppBundle\Form\LogDataBuildConfType
         arguments: ["@app.config.manager"]
         tags: [ name: form.type ]
 
     form.pr.with.conf.image:
         class: AppBundle\Form\PRWithConfigBuildConfType
+        arguments: ["@app.config.manager"]
+        tags: [ name: form.type ]
+
+    form.sub.linked.project.env:
+        class: AppBundle\Form\LinkedProjectEnvSubType
+        arguments: ["@app.config.manager"]
+        tags: [ name: form.type ]
+
+    form.sub.linked.config:
+        class: AppBundle\Form\LinkedConfigSubType
         arguments: ["@app.config.manager"]
         tags: [ name: form.type ]
