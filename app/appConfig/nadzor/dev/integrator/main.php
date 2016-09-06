@@ -3,83 +3,83 @@
 // This is the main Web application configuration. Any writable
 // CWebApplication properties can be configured here.
 return array(
-	'basePath' => dirname(__FILE__) . DIRECTORY_SEPARATOR . '..',
-	'name' => 'MARM Integrator',
+    'basePath' => dirname(__FILE__) . DIRECTORY_SEPARATOR . '..',
+    'name' => 'MARM Integrator',
 
-	// preloading 'log' component
-	'preload' => array('log'),
+    // preloading 'log' component
+    'preload' => array('log'),
 
-	// autoloading model and component classes
-	'import' => array(
-		'application.models.*',
-		'application.components.*',
-		'ext.connector.*',
-		'ext.api.*',
-	),
+    // autoloading model and component classes
+    'import' => array(
+        'application.models.*',
+        'application.components.*',
+        'ext.connector.*',
+        'ext.api.*',
+    ),
 
-	'modules' => array(
+    'modules' => array(
 //		'gii'=>array(
 ////			'class'=>'system.gii.GiiModule',
 ////			'password'=>'123456',
 ////			// If removed, Gii defaults to localhost only. Edit carefully to taste.
 ////			'ipFilters'=>array('127.0.0.1','::1','192.168.56.1'),
 //		),
-	),
+    ),
 
-	// application components
-	'components' => array(
-		'user' => array(
-			// enable cookie-based authentication
-			// 'allowAutoLogin'=>true,
-		),
-		// uncomment the following to enable URLs in path-format
+    // application components
+    'components' => array(
+        'user' => array(
+            // enable cookie-based authentication
+            // 'allowAutoLogin'=>true,
+        ),
+        // uncomment the following to enable URLs in path-format
 
-		'urlManager' => array(
-			'showScriptName' => false,
-			'urlFormat' => 'path',
+        'urlManager' => array(
+            'showScriptName' => false,
+            'urlFormat' => 'path',
 //			'rules'=>array(
 //				'<controller:\w+>/<id:\d+>'=>'<controller>/view',
 //				'<controller:\w+>/<action:\w+>/<id:\d+>'=>'<controller>/<action>',
 //				'<controller:\w+>/<action:\w+>'=>'<controller>/<action>',
 //			),
-		),
+        ),
 
-		'db_nadzor' => array(
-			'class' => 'CDbConnection',
-			'connectionString' => 'pgsql:dbname=nadzor',
-			'username' => 'pguser',
-			'password' => 'jA2QWe21F4',
-		),
+        'db_nadzor' => array(
+            'class' => 'CDbConnection',
+            'connectionString' => 'pgsql:host=172.29.134.17;dbname=nadzor',
+            'username' => 'pguser',
+            'password' => 'jA2QWe21F4',
+        ),
 
-		'db_nsi' => array(
-			'class' => 'ext.oci8Pdo.OciDbConnection',
-			'connectionString' => 'oci:dbname=(DESCRIPTION =
+        'db_nsi' => array(
+            'class' => 'ext.oci8Pdo.OciDbConnection',
+            'connectionString' => 'oci:dbname=(DESCRIPTION =
                 (ADDRESS = (PROTOCOL = TCP)(HOST = 10.11.32.87)(PORT = 1521))
                 (CONNECT_DATA =
                     (SERVER = DEDICATED)
                     (SERVICE_NAME = gaiebdm)
                 )
             );charset=AL32UTF8;',
-			'username' => 'police_mobile',
-			'password' => 'police_mobile',
-			//'enableProfiling' => true,
-			//'enableParamLogging' => true,
-		),
+            'username' => 'police_mobile',
+            'password' => 'police_mobile',
+            //'enableProfiling' => true,
+            //'enableParamLogging' => true,
+        ),
 
-		'cache' => array(
-			'class' => 'system.caching.CMemCache',
-			'servers' => array(
-				array('host' => '127.0.0.1', 'port' => 11211),
-			),
-		),
-		'errorHandler' => array(
-			// use 'site/error' action to display errors
-			'errorAction' => 'throw/error',
-		),
-		'log' => array(
-			'class' => 'CLogRouter',
-			'routes' => array(
-				array(
+        'cache' => array(
+            'class' => 'system.caching.CMemCache',
+            'servers' => array(
+                array('host' => '127.0.0.1', 'port' => 11211),
+            ),
+        ),
+        'errorHandler' => array(
+            // use 'site/error' action to display errors
+            'errorAction' => 'throw/error',
+        ),
+        'log' => array(
+            'class' => 'CLogRouter',
+            'routes' => array(
+                array(
                     'class' => 'CFileLogRoute',
                     'levels' => 'error, warning, info, trace',
                     'except' => 'project.*'
@@ -93,29 +93,28 @@ return array(
                     'maxFileSize' => 1024000,
                     'maxLogFiles' => 5,
                 ),
-			),
-		),
-	),
-
-	'params' => array(
-		'mongo' => array(
-			'db' => 'integrator',
-			'connectionString' => 'mongodb://127.0.0.1:27017',
-			'username' => 'mongouser',
-			'password' => 'jA2QWe21F4',
-		),
-		'marmBoxLink' => 'http://marm-server-box/',
-		'marmBoxUser' => array(
-			'login' => 'integrator',
-			'password' => 'iknowyouwantmetoauthorize'
-		),
-		'printFormLink' => 'http://printForm.local/',
-		'userfilesPath' => 'http://dev.box.marm2.altarix.org/userfiles/',
-		'altarixGibddLink' => 'http://91.228.152.72:8085',
-		'nadzor' => array(
-			'cryptKey' => 'QR1hz1p9FpUqQulu1KNPuWmzKNJi4MGWkkejMEfy6IUUxAGD2KhFfpZJ2HTiBA7Pe9BsSFKz7TQboqzbV4A6wJu6RwCIwbazOH14ffBHHL5nFA9pgqIhkm4BDrgCaltf'
-		),
+            ),
         ),
-        
-	),
+    ),
+
+    'params' => array(
+        'mongo' => array(
+            'db' => 'integrator',
+            'connectionString' => 'mongodb://172.29.134.17:27017',
+            'username' => 'mongouser',
+            'password' => 'jA2QWe21F4',
+        ),
+        'marmBoxLink' => 'http://marm-server-box/',
+        'marmBoxUser' => array(
+            'login' => 'integrator',
+            'password' => 'iknowyouwantmetoauthorize'
+        ),
+        'printFormLink' => 'http://marm-server-printform/',
+        'userfilesPath' => 'http://172.29.12.1:8081/userfiles/',
+        'altarixGibddLink' => 'http://91.228.152.72:8085',
+        'nadzor' => array(
+            'cryptKey' => 'QR1hz1p9FpUqQulu1KNPuWmzKNJi4MGWkkejMEfy6IUUxAGD2KhFfpZJ2HTiBA7Pe9BsSFKz7TQboqzbV4A6wJu6RwCIwbazOH14ffBHHL5nFA9pgqIhkm4BDrgCaltf'
+        ),
+    ),
+
 );

@@ -27,6 +27,10 @@ class CronBuildConf extends ProjectRelatedBuildConf {
         return json_encode(['PROJECT_NAME' => $this->getProject()]);
     }
 
+    public function getFullName() {
+        return $this->getImagePrefix() . $this->getProject() . '-' . $this->getEnv() . ':' . $this->getVersion();
+    }
+
     /**
      * @return string
      */

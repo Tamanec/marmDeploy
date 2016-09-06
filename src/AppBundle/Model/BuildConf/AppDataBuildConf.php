@@ -48,6 +48,7 @@ class AppDataBuildConf extends ProjectRelatedBuildConf {
         return $this->getImagePrefix()
         . $this->getType()
         . '-' . $this->getProject()
+        . '-' . $this->getEnv()
         . ':' . $this->getVersion();
     }
 

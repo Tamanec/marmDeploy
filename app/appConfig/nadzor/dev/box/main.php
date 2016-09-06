@@ -47,13 +47,13 @@ return array(
 
 		'db_collective' => array(
 			'class' => 'CDbConnection',
-			'connectionString' => 'pgsql:dbname=collective',
+			'connectionString' => 'pgsql:host=172.29.134.17;dbname=collective',
 			'username' => 'pguser',
 			'password' => 'jA2QWe21F4',
 		),
 		'db_nadzor' => array(
 			'class' => 'CDbConnection',
-			'connectionString' => 'pgsql:dbname=nadzor',
+			'connectionString' => 'pgsql:host=172.29.134.17;dbname=nadzor',
 			'username' => 'pguser',
 			'password' => 'jA2QWe21F4',
 		),
@@ -105,15 +105,15 @@ return array(
 	'params' => array(
 		//MongoDB settings
 		'mongo' => array(
-			'connectionString' => 'mongodb://127.0.0.1:27017',
+			'connectionString' => 'mongodb://172.29.134.17:27017',
 			'username' => 'mongouser',
 			'password' => 'jA2QWe21F4',
 		),
 
 		'printLink' => 'http://dev.print.marm2.altarix.org/', // deprecated
 		'integratorLink' => 'http://marm-server-integrator/',
-		'printFormLink' => 'http://printForm.local/',
-		'boxExternalLink' => 'http://dev.box.marm2.altarix.org/',
+		'printFormLink' => 'http://marm-server-printform/',
+		'boxExternalLink' => 'http://172.29.12.1:8081/',
 		'userfilesPath' => '/var/www/userfiles/',
 		'userfilesPrefix' => '/userfiles/',
 		'nadzor' => array(
