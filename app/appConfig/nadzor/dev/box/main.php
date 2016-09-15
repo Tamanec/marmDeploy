@@ -47,15 +47,15 @@ return array(
 
 		'db_collective' => array(
 			'class' => 'CDbConnection',
-			'connectionString' => 'pgsql:host=172.29.134.17;dbname=collective',
+			'connectionString' => 'pgsql:host=marm-postgres;dbname=collective',
 			'username' => 'pguser',
-			'password' => 'jA2QWe21F4',
+			'password' => 'Qwerty123',
 		),
 		'db_nadzor' => array(
 			'class' => 'CDbConnection',
-			'connectionString' => 'pgsql:host=172.29.134.17;dbname=nadzor',
+			'connectionString' => 'pgsql:host=marm-postgres;dbname=nadzor',
 			'username' => 'pguser',
-			'password' => 'jA2QWe21F4',
+			'password' => 'Qwerty123',
 		),
 		'db_nsi' => array(
 			'class' => 'ext.oci8Pdo.OciDbConnection',
@@ -74,7 +74,7 @@ return array(
 		'cache' => array(
 			'class' => 'system.caching.CMemCache',
 			'servers' => array(
-				array('host' => '127.0.0.1', 'port' => 11211),
+				array('host' => 'marm-memcached', 'port' => 11211),
 			),
 		),
 		'errorHandler' => array(
@@ -105,9 +105,9 @@ return array(
 	'params' => array(
 		//MongoDB settings
 		'mongo' => array(
-			'connectionString' => 'mongodb://172.29.134.17:27017',
+			'connectionString' => 'mongodb://marm-mongo:27017',
 			'username' => 'mongouser',
-			'password' => 'jA2QWe21F4',
+			'password' => 'Qwerty123',
 		),
 
 		'printLink' => 'http://dev.print.marm2.altarix.org/', // deprecated

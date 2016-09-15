@@ -20,15 +20,15 @@ return array(
 	'components' => array(
 		'db_collective' => array(
 			'class' => 'CDbConnection',
-			'connectionString' => 'pgsql:host=172.29.134.17;dbname=collective',
+			'connectionString' => 'pgsql:host=marm-postgres;dbname=collective',
 			'username' => 'pguser',
-			'password' => 'jA2QWe21F4',
+			'password' => 'Qwerty123',
 		),
 		'db_nadzor' => array(
 			'class' => 'CDbConnection',
-			'connectionString' => 'pgsql:host=172.29.134.17;dbname=nadzor',
+			'connectionString' => 'pgsql:host=marm-postgres;dbname=nadzor',
 			'username' => 'pguser',
-			'password' => 'jA2QWe21F4',
+			'password' => 'Qwerty123',
 		),
 		'db_nsi' => array(
 			'class' => 'ext.oci8Pdo.OciDbConnection',
@@ -67,9 +67,9 @@ return array(
 
 	'params' => array(
 		'mongo' => array(
-			'connectionString' => 'mongodb://172.29.134.17:27017',
+			'connectionString' => 'mongodb://marm-mongo:27017',
 			'username' => 'mongouser',
-			'password' => 'jA2QWe21F4',
+			'password' => 'Qwerty123',
 		),
 		'userfilesPath' => '/var/www/userfiles/'
 	)

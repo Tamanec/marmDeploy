@@ -44,26 +44,17 @@ return array(
 //			),
         ),
 
-        'db_nadzor' => array(
+//		'db'=>array(
+//			'class'=>'CDbConnection',
+//			'connectionString' => 'pgsql:dbname=integrator',
+//			'username'=>'pguser',
+//			'password'=>'jA2QWe21F4',
+//		),
+        'db_sgtn' => array(
             'class' => 'CDbConnection',
-            'connectionString' => 'pgsql:host=marm-postgres;dbname=nadzor',
+            'connectionString' => 'pgsql:host=172.29.134.17;dbname=sgtn',
             'username' => 'pguser',
-            'password' => 'Qwerty123',
-        ),
-
-        'db_nsi' => array(
-            'class' => 'ext.oci8Pdo.OciDbConnection',
-            'connectionString' => 'oci:dbname=(DESCRIPTION =
-                (ADDRESS = (PROTOCOL = TCP)(HOST = 10.11.32.87)(PORT = 1521))
-                (CONNECT_DATA =
-                    (SERVER = DEDICATED)
-                    (SERVICE_NAME = gaiebdm)
-                )
-            );charset=AL32UTF8;',
-            'username' => 'police_mobile',
-            'password' => 'police_mobile',
-            //'enableProfiling' => true,
-            //'enableParamLogging' => true,
+            'password' => 'jA2QWe21F4',
         ),
 
         'cache' => array(
@@ -87,9 +78,9 @@ return array(
                 array(
                     'class' => 'CFileLogRoute',
                     'levels' => 'error, warning, info, trace',
-                    'categories' => 'project.nadzor.service.*',
-                    'logFile' => 'NadzorService.log',
-                    'logPath' => '/var/log/marm/nadzor/service/',
+                    'categories' => 'project.sgtn.service.*',
+                    'logFile' => 'SgtnService.log',
+                    'logPath' => '/var/log/marm/sgtn/service/',
                     'maxFileSize' => 1024000,
                     'maxLogFiles' => 5,
                 ),
@@ -100,21 +91,30 @@ return array(
     'params' => array(
         'mongo' => array(
             'db' => 'integrator',
-            'connectionString' => 'mongodb://marm-mongo:27017',
+            'connectionString' => 'mongodb://172.29.134.17:27017',
             'username' => 'mongouser',
-            'password' => 'Qwerty123',
+            'password' => 'jA2QWe21F4',
         ),
         'marmBoxLink' => 'http://marm-server-box/',
         'marmBoxUser' => array(
             'login' => 'integrator',
             'password' => 'iknowyouwantmetoauthorize'
         ),
-        'printFormLink' => 'http://marm-server-printform/',
-        'userfilesPath' => 'http://172.29.12.1:8081/userfiles/',
-        'altarixGibddLink' => 'http://91.228.152.72:8085',
-        'nadzor' => array(
-            'cryptKey' => 'QR1hz1p9FpUqQulu1KNPuWmzKNJi4MGWkkejMEfy6IUUxAGD2KhFfpZJ2HTiBA7Pe9BsSFKz7TQboqzbV4A6wJu6RwCIwbazOH14ffBHHL5nFA9pgqIhkm4BDrgCaltf'
+        'printFormLink' => 'http://printForm.local/',
+        'userfilesPath' => 'http://dev.box.marm2.altarix.org/userfiles/',
+        'altarixGibddLink' => 'http://77.247.243.35:1010',
+        
+        'sgtn' => array(
+            'connection' => array(
+                'useStub' => false,
+                'wsdl' => 'http://87.245.154.37/sgtn_mobileTest/sgtn_mobile.svc?wsdl',
+                'connectionTimeout' => 15,
+                'requestTimeout' => 30,
+                'auth' => array(
+                    'login' => 'sgtn_mobile',
+                    'password' => 'v8EbU1Vfxb'
+                )
+            )
         ),
     ),
-
 );

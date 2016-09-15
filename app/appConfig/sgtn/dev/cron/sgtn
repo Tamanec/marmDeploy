@@ -1,0 +1,27 @@
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=marm2-dev@altarix.ru
+
+INTEGRATOR=/var/www/integrator
+BOX=/var/www/box
+LOGS_PATH=/var/log/marm/sgtn/cron
+
+#--- СГТН ---#
+# x-marm-version: 2.4.12
+# x-marm-token: sgtn
+# x-project-version: v1d10
+
+# removeOldVisits
+#0 0 * * * root ${INTEGRATOR}/protected/yiic sgtn removeOldVisits >> ${LOGS_PATH}/sgtn-removeOldVisits.log
+
+# import docs
+#0 8-20/1 * * * root ${INTEGRATOR}/protected/yiic sgtn import >> ${LOGS_PATH}/sgtn-import.log
+
+
+#экспорт carCheck
+#*/5 * * * * root ${INTEGRATOR}/protected/yiic sgtn exportCarCheck &>> ${LOGS_PATH}/cron/sgtn-export.log && ${INTEGRATOR}/protected/yiic sgtn getPrintForm &>> ${LOGS_PATH}/sgtn-getPrintForm.log
+
+
+# генерация выездов
+
+#0-5 2 * * * root /home/miicron/visits_generator.sh &>> ${LOGS_PATH}/cron.log
