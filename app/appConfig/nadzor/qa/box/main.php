@@ -112,7 +112,7 @@ return array(
 
 		'integratorLink' => 'http://marm-server-integrator/',
 		'printFormLink' => 'http://marm-server-printform/',
-		'boxExternalLink' => 'http://172.29.12.1:8081/',
+		'boxExternalLink' => 'http://172.29.12.2:8081/',
 		'userfilesPath' => '/var/www/userfiles/',
 		'userfilesPrefix' => '/userfiles/',
 		'nadzor' => array(

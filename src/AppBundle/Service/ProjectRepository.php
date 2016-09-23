@@ -47,6 +47,7 @@ class ProjectRepository {
         $git = new Repository($projectPath);
         $git->fetch();
         $git->checkout($branch);
+        $git->pull();
     }
 
     /**
