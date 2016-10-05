@@ -16,7 +16,8 @@ RUN docker-php-ext-enable opcache
 
 RUN apt-get install -y \
     vim \
-    git
+    git \
+    zip unzip
 
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
     php composer-setup.php && \
